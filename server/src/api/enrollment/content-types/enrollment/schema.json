@@ -7,19 +7,21 @@
     "displayName": "Enrollment"
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
     "student": {
       "type": "relation",
-      "relation": "oneToOne",
-      "target": "plugin::users-permissions.user"
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "enrollments"
     },
     "course": {
       "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::course.course"
+      "relation": "manyToOne",
+      "target": "api::course.course",
+      "inversedBy": "enrollments"
     },
     "enrolledAt": {
       "type": "datetime"

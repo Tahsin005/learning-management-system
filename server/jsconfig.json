@@ -4,6 +4,10 @@
     "moduleResolution": "nodenext",
     "target": "ES2021",
     "checkJs": true,
-    "allowJs": true
-  }
+    "allowJs": true,
+    "skipLibCheck": true,
+    "maxNodeModuleJsDepth": 0
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", ".tmp", "dist", "build", "src/admin/vite.config.example.js"]
 }

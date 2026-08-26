@@ -7,7 +7,7 @@
     "displayName": "Course"
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
@@ -17,11 +17,11 @@
     "description": {
       "type": "blocks"
     },
-    "owners": {
+    "owner": {
       "type": "relation",
-      "relation": "oneToMany",
+      "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
-      "mappedBy": "course"
+      "inversedBy": "courses"
     },
     "lessons": {
       "type": "relation",
@@ -33,6 +33,12 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::quiz.quiz",
+      "mappedBy": "course"
+    },
+    "enrollments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::enrollment.enrollment",
       "mappedBy": "course"
     }
   }
