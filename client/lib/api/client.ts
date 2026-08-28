@@ -121,7 +121,7 @@ export async function request<T>(
     }
   }
 
-  let responseData: any = null;
+  let responseData: unknown = null;
   const contentType = response.headers.get("content-type");
   if (contentType && contentType.includes("application/json")) {
     responseData = await response.json().catch(() => null);

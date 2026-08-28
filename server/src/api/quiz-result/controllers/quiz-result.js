@@ -49,6 +49,18 @@ module.exports = createCoreController('api::quiz-result.quiz-result', ({ strapi 
       }
     }
 
+    // verify student has not already submitted this quiz
+    const existingResult = await strapi.documents('api::quiz-result.quiz-result').findFirst({
+      filters: {
+        student: { id: user.id },
+        quiz: { documentId: quiz.documentId || quizId },
+      },
+    });
+
+    if (existingResult) {
+      return ctx.badRequest('You have already submitted this assessment. Multiple submissions are not permitted.');
+    }
+
     const questions = quiz.questions || [];
     const totalQuestions = questions.length;
     let score = 0;

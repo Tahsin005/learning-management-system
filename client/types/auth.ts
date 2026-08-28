@@ -8,6 +8,8 @@ export interface UserRole {
   type: UserRoleType;
 }
 
+export type Role = UserRole;
+
 export interface User {
   id: number;
   documentId: string;

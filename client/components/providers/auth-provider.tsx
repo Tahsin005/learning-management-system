@@ -10,8 +10,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [minDelayPassed, setMinDelayPassed] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     const timer = setTimeout(() => {
+      setMounted(true);
       setMinDelayPassed(true);
     }, 600);
 

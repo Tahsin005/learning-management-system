@@ -32,8 +32,9 @@ export function useMeQuery() {
         setUser(user);
         setInitialized(true);
         return user;
-      } catch (error: any) {
-        if (error?.status === 401 || error?.message?.includes("401")) {
+      } catch (error: unknown) {
+        const err = error as { status?: number; message?: string };
+        if (err?.status === 401 || err?.message?.includes("401")) {
           clearAuth();
         }
         setInitialized(true);
@@ -42,8 +43,9 @@ export function useMeQuery() {
     },
     enabled: !!token,
     staleTime: 5 * 60 * 1000,
-    retry: (failureCount, error: any) => {
-      if (error?.status === 401 || error?.message?.includes("401")) return false;
+    retry: (failureCount, error: unknown) => {
+      const err = error as { status?: number; message?: string };
+      if (err?.status === 401 || err?.message?.includes("401")) return false;
       return failureCount < 2;
     },
   });

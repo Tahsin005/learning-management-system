@@ -108,7 +108,12 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
     const [enrollments, total] = await Promise.all([
       strapi.documents('api::enrollment.enrollment').findMany({
         filters,
-        populate: ['course', 'student'],
+        populate: {
+          course: {
+            populate: ['lessons', 'quizzes'],
+          },
+          student: true,
+        },
         sort: /** @type {any} */ (sort) || { createdAt: 'desc' },
         start,
         limit,
@@ -116,30 +121,82 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
       strapi.documents('api::enrollment.enrollment').count({ filters }),
     ]);
 
-    const sanitizedEnrollments = enrollments.map((e) => ({
-      id: e.id,
-      documentId: e.documentId,
-      enrolledAt: e.enrolledAt,
-      createdAt: e.createdAt,
-      updatedAt: e.updatedAt,
-      publishedAt: e.publishedAt,
-      course: e.course
-        ? {
-            id: e.course.id,
-            documentId: e.course.documentId,
-            title: e.course.title,
-            description: e.course.description,
-          }
-        : null,
-      student: e.student
-        ? {
-            id: e.student.id,
-            documentId: e.student.documentId,
-            username: e.student.username,
-            email: e.student.email,
-          }
-        : null,
-    }));
+    const sanitizedEnrollments = await Promise.all(
+      enrollments.map(async (e) => {
+        const studentId = e.student?.id || user.id;
+        const lessons = e.course?.lessons || [];
+        const quizzes = e.course?.quizzes || [];
+        const totalLessons = lessons.length;
+        const totalQuizzes = quizzes.length;
+
+        let completedLessons = 0;
+        let completedQuizzes = 0;
+
+        if (totalLessons > 0) {
+          const lessonDocIds = lessons.map((l) => String(l.documentId || l.id));
+          const progressCount = await strapi.documents('api::lesson-progress.lesson-progress').count({
+            filters: {
+              student: { id: studentId },
+              lesson: { documentId: { $in: lessonDocIds } },
+              completed: true,
+            },
+          });
+          completedLessons = progressCount;
+        }
+
+        if (totalQuizzes > 0) {
+          const quizDocIds = quizzes.map((q) => String(q.documentId || q.id));
+          const resultCount = await strapi.documents('api::quiz-result.quiz-result').count({
+            filters: {
+              student: { id: studentId },
+              quiz: { documentId: { $in: quizDocIds } },
+            },
+          });
+          completedQuizzes = resultCount;
+        }
+
+        const isLessonsCompleted = totalLessons === 0 || completedLessons >= totalLessons;
+        const isQuizzesCompleted = totalQuizzes === 0 || completedQuizzes >= totalQuizzes;
+        const isCompleted = isLessonsCompleted && isQuizzesCompleted;
+
+        const totalItems = totalLessons + totalQuizzes;
+        const completedItems = completedLessons + completedQuizzes;
+        const progressPercentage = totalItems > 0 ? Math.min(100, Math.round((completedItems / totalItems) * 100)) : 0;
+
+        return {
+          id: e.id,
+          documentId: e.documentId,
+          enrolledAt: e.enrolledAt,
+          createdAt: e.createdAt,
+          updatedAt: e.updatedAt,
+          publishedAt: e.publishedAt,
+          isCompleted,
+          completedLessons,
+          totalLessons,
+          completedQuizzes,
+          totalQuizzes,
+          progressPercentage,
+          course: e.course
+            ? {
+                id: e.course.id,
+                documentId: e.course.documentId,
+                title: e.course.title,
+                description: e.course.description,
+                lessons: e.course.lessons || [],
+                quizzes: e.course.quizzes || [],
+              }
+            : null,
+          student: e.student
+            ? {
+                id: e.student.id,
+                documentId: e.student.documentId,
+                username: e.student.username,
+                email: e.student.email,
+              }
+            : null,
+        };
+      })
+    );
 
     return ctx.send({
       data: sanitizedEnrollments,
@@ -163,13 +220,23 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
     const { id } = ctx.params;
     let enrollment = await strapi.documents('api::enrollment.enrollment').findOne({
       documentId: id,
-      populate: ['course', 'student'],
+      populate: {
+        course: {
+          populate: ['lessons', 'quizzes'],
+        },
+        student: true,
+      },
     });
 
     if (!enrollment) {
       enrollment = await strapi.db.query('api::enrollment.enrollment').findOne({
         where: { id },
-        populate: ['course', 'student'],
+        populate: {
+          course: {
+            populate: ['lessons', 'quizzes'],
+          },
+          student: true,
+        },
       });
     }
 
@@ -184,6 +251,46 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
       return ctx.forbidden('Access denied.');
     }
 
+    const studentId = enrollment.student?.id || user.id;
+    const lessons = enrollment.course?.lessons || [];
+    const quizzes = enrollment.course?.quizzes || [];
+    const totalLessons = lessons.length;
+    const totalQuizzes = quizzes.length;
+
+    let completedLessons = 0;
+    let completedQuizzes = 0;
+
+    if (totalLessons > 0) {
+      const lessonDocIds = lessons.map((l) => String(l.documentId || l.id));
+      const progressCount = await strapi.documents('api::lesson-progress.lesson-progress').count({
+        filters: {
+          student: { id: studentId },
+          lesson: { documentId: { $in: lessonDocIds } },
+          completed: true,
+        },
+      });
+      completedLessons = progressCount;
+    }
+
+    if (totalQuizzes > 0) {
+      const quizDocIds = quizzes.map((q) => String(q.documentId || q.id));
+      const resultCount = await strapi.documents('api::quiz-result.quiz-result').count({
+        filters: {
+          student: { id: studentId },
+          quiz: { documentId: { $in: quizDocIds } },
+        },
+      });
+      completedQuizzes = resultCount;
+    }
+
+    const isLessonsCompleted = totalLessons === 0 || completedLessons >= totalLessons;
+    const isQuizzesCompleted = totalQuizzes === 0 || completedQuizzes >= totalQuizzes;
+    const isCompleted = isLessonsCompleted && isQuizzesCompleted;
+
+    const totalItems = totalLessons + totalQuizzes;
+    const completedItems = completedLessons + completedQuizzes;
+    const progressPercentage = totalItems > 0 ? Math.min(100, Math.round((completedItems / totalItems) * 100)) : 0;
+
     return ctx.send({
       data: {
         id: enrollment.id,
@@ -192,12 +299,20 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
         createdAt: enrollment.createdAt,
         updatedAt: enrollment.updatedAt,
         publishedAt: enrollment.publishedAt,
+        isCompleted,
+        completedLessons,
+        totalLessons,
+        completedQuizzes,
+        totalQuizzes,
+        progressPercentage,
         course: enrollment.course
           ? {
               id: enrollment.course.id,
               documentId: enrollment.course.documentId,
               title: enrollment.course.title,
               description: enrollment.course.description,
+              lessons: enrollment.course.lessons || [],
+              quizzes: enrollment.course.quizzes || [],
             }
           : null,
         student: enrollment.student

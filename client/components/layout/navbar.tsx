@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { GraduationCap, LogOut, LayoutDashboard, ChevronDown } from "lucide-react";
+import { GraduationCap, LogOut, LayoutDashboard, ChevronDown, BookOpen } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -100,6 +100,13 @@ export function Navbar() {
                 <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
                 <span>Dashboard</span>
               </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => router.push("/courses")}
+                className="cursor-pointer gap-2"
+              >
+                <BookOpen className="h-4 w-4 text-muted-foreground" />
+                <span>Browse Courses</span>
+              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -137,14 +144,22 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/85 backdrop-blur-md">
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2.5 font-bold text-xl tracking-tight">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-            <GraduationCap className="h-5 w-5" />
-          </div>
-          <span className="bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
-            Scholler
-          </span>
-        </Link>
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center gap-2.5 font-bold text-xl tracking-tight">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+              <GraduationCap className="h-5 w-5" />
+            </div>
+            <span className="bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+              Scholler
+            </span>
+          </Link>
+
+          <nav className="hidden sm:flex items-center gap-6 text-sm font-medium text-muted-foreground">
+            <Link href="/courses" className="hover:text-foreground transition-colors">
+              Courses
+            </Link>
+          </nav>
+        </div>
 
         <div className="flex items-center gap-3">
           {renderAuthActions()}

@@ -5,13 +5,11 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { Navbar } from "@/components/layout/navbar";
 import { cn } from "@/lib/utils";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col bg-background selection:bg-primary/20 selection:text-primary">
-      <Navbar />
+    <div className="flex flex-1 flex-col bg-background selection:bg-primary/20 selection:text-primary">
       <main className="flex-1">
         <section className="relative overflow-hidden py-20 md:py-32">
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))]" />
@@ -30,10 +28,10 @@ export default function Home() {
 
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                href="#courses"
+                href="/courses"
                 className={cn(
                   buttonVariants({ size: "lg" }),
-                  "h-12 px-8 text-base shadow-md gap-2"
+                  "h-12 px-8 text-base shadow-md gap-2 bg-primary text-white"
                 )}
               >
                 Explore Courses

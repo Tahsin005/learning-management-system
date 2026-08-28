@@ -1,317 +1,246 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  KeyRound,
-  Loader2,
-  CheckCircle2,
-  Calendar,
-  Mail,
-  User,
-  Shield,
-  Clock,
-} from "lucide-react";
+import { Loader2, GraduationCap, KeyRound, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
-import { changePasswordSchema, type ChangePasswordFormValues } from "@/lib/validations/auth";
-import { Navbar } from "@/components/layout/navbar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useMyEnrollmentsQuery } from "@/hooks/queries/use-enrollment-queries";
+import { useMyQuizResultsQuery } from "@/hooks/queries/use-quiz-queries";
+import type { QuizResultRecord } from "@/types/course";
+import type { ChangePasswordFormValues } from "@/lib/validations/auth";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+
+import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { DashboardStats } from "@/components/dashboard/dashboard-stats";
+import { EnrolledCoursesList } from "@/components/dashboard/enrolled-courses-list";
+import { QuizScoresList } from "@/components/dashboard/quiz-scores-list";
+import { QuizResultModal } from "@/components/dashboard/quiz-result-modal";
+import { AccountProfileCard } from "@/components/dashboard/account-profile-card";
+import { SecurityTab } from "@/components/dashboard/security-tab";
 
 export default function DashboardPage() {
   const {
     user,
     role,
     roleType,
+    isAuthenticated,
     changePassword,
     isChangingPassword,
     isLoggingOut,
   } = useAuth();
-  const [activeTab, setActiveTab] = useState<"overview" | "security">("overview");
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<ChangePasswordFormValues>({
-    resolver: zodResolver(changePasswordSchema),
-    defaultValues: {
-      currentPassword: "",
-      password: "",
-      passwordConfirmation: "",
-    },
-  });
+  const [activeTab, setActiveTab] = useState<"overview" | "courses" | "quizzes" | "security">("overview");
+  const [coursesPage, setCoursesPage] = useState(1);
+  const [quizzesPage, setQuizzesPage] = useState(1);
+  const [selectedQuizResult, setSelectedQuizResult] = useState<QuizResultRecord | null>(null);
 
-  const onChangePasswordSubmit = async (values: ChangePasswordFormValues) => {
-    try {
-      await changePassword(values);
-      reset();
-    } catch {
-      // Error handled by mutation
-    }
+  const { data: enrollmentsData, isLoading: isEnrollmentsLoading } = useMyEnrollmentsQuery(
+    coursesPage,
+    3,
+    isAuthenticated
+  );
+
+  const { data: quizResultsData, isLoading: isQuizResultsLoading } = useMyQuizResultsQuery(
+    quizzesPage,
+    5,
+    isAuthenticated
+  );
+
+  const enrollments = enrollmentsData?.data || [];
+  const enrollmentsPagination = enrollmentsData?.meta?.pagination || {
+    page: 1,
+    pageSize: 3,
+    pageCount: 1,
+    total: 0,
   };
 
-  const getRoleBadge = () => {
-    switch (roleType) {
-      case "admin":
-        return <Badge variant="default" className="bg-amber-600 hover:bg-amber-700 text-xs">Admin</Badge>;
-      case "content_manager":
-        return <Badge variant="secondary" className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs">Content Manager</Badge>;
-      case "instructor":
-        return <Badge variant="outline" className="border-emerald-500/40 text-emerald-400 bg-emerald-500/5 text-xs">Instructor</Badge>;
-      case "student":
-        return <Badge variant="secondary" className="bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs">Student</Badge>;
-      default:
-        return <Badge variant="outline" className="text-xs">User</Badge>;
-    }
+  const quizResults = quizResultsData?.data || [];
+  const quizPagination = quizResultsData?.meta?.pagination || {
+    page: 1,
+    pageSize: 5,
+    pageCount: 1,
+    total: 0,
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "N/A";
-    try {
-      return new Date(dateString).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
-    } catch {
-      return dateString;
-    }
+  const handleChangePassword = async (values: ChangePasswordFormValues) => {
+    await changePassword(values);
   };
 
-  if (!user || isLoggingOut) {
+  if (!user && !isLoggingOut) {
     return (
-      <div className="flex min-h-screen flex-col bg-background text-foreground">
-        <Navbar />
+      <div className="flex flex-1 flex-col items-center justify-center space-y-4 py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Loading student profile...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <Navbar />
+    <div className="flex flex-1 flex-col bg-background text-foreground selection:bg-primary/20 selection:text-primary">
+      <main className="flex-1 container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <DashboardHeader
+          user={user}
+          role={role}
+          roleType={roleType}
+        />
 
-        <main className="flex-1 container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-border/60 pb-6">
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                  Hello, {user?.username}
-                </h1>
-                {getRoleBadge()}
+        <div className="flex flex-wrap gap-2 border-b border-border/60 pb-3">
+          <Button
+            variant={activeTab === "overview" ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setActiveTab("overview")}
+            className="text-xs font-semibold"
+          >
+            Overview
+          </Button>
+          <Button
+            variant={activeTab === "courses" ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setActiveTab("courses")}
+            className="text-xs font-semibold gap-1.5"
+          >
+            <span>Enrolled Courses</span>
+            {enrollmentsPagination.total > 0 && (
+              <Badge variant="secondary" className="px-1.5 py-0 text-[10px] font-bold">
+                {enrollmentsPagination.total}
+              </Badge>
+            )}
+          </Button>
+          <Button
+            variant={activeTab === "quizzes" ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setActiveTab("quizzes")}
+            className="text-xs font-semibold gap-1.5"
+          >
+            <span>Quiz Scores</span>
+            {quizPagination.total > 0 && (
+              <Badge variant="secondary" className="px-1.5 py-0 text-[10px] font-bold">
+                {quizPagination.total}
+              </Badge>
+            )}
+          </Button>
+          <Button
+            variant={activeTab === "security" ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setActiveTab("security")}
+            className="text-xs font-semibold gap-1.5"
+          >
+            <KeyRound className="h-3.5 w-3.5" />
+            <span>Security & Password</span>
+          </Button>
+        </div>
+
+        {activeTab === "overview" && (
+          <div className="space-y-8">
+            <DashboardStats
+              role={role}
+              roleType={roleType}
+              enrolledCount={enrollmentsPagination.total}
+              quizzesCount={quizPagination.total}
+              memberSince={user?.createdAt}
+            />
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <GraduationCap className="h-5 w-5 text-primary" />
+                  <span>My Enrolled Courses</span>
+                </h2>
+                <Link
+                  href="/courses"
+                  className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-xs gap-1 text-primary")}
+                >
+                  <span>Browse All Courses</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
               </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                {user?.email} • ID: <code className="text-xs font-mono bg-muted/60 text-zinc-300 px-1.5 py-0.5 rounded border border-border/40">{user?.documentId || user?.id}</code>
+
+              <EnrolledCoursesList
+                enrollments={enrollments}
+                isLoading={isEnrollmentsLoading}
+                page={coursesPage}
+                pageCount={enrollmentsPagination.pageCount}
+                total={enrollmentsPagination.total}
+                onPageChange={setCoursesPage}
+              />
+            </div>
+
+            <AccountProfileCard
+              user={user}
+              role={role}
+              roleType={roleType}
+            />
+          </div>
+        )}
+
+        {activeTab === "courses" && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between border-b border-border/60 pb-4">
+              <div>
+                <h2 className="text-xl font-bold tracking-tight text-foreground">
+                  My Enrolled Courses
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  All active learning tracks associated with your account
+                </p>
+              </div>
+              <Link
+                href="/courses"
+                className={cn(buttonVariants({ size: "sm" }), "bg-primary text-white text-xs font-semibold gap-1.5")}
+              >
+                <span>Find More Courses</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+
+            <EnrolledCoursesList
+              enrollments={enrollments}
+              isLoading={isEnrollmentsLoading}
+              page={coursesPage}
+              pageCount={enrollmentsPagination.pageCount}
+              total={enrollmentsPagination.total}
+              onPageChange={setCoursesPage}
+            />
+          </div>
+        )}
+
+        {activeTab === "quizzes" && (
+          <div className="space-y-6">
+            <div className="border-b border-border/60 pb-4">
+              <h2 className="text-xl font-bold tracking-tight text-foreground">
+                Assessment History & Grades
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Review your past quiz submissions and inspect detailed question breakdowns
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Button
-                variant={activeTab === "overview" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setActiveTab("overview")}
-              >
-                Dashboard Overview
-              </Button>
-              <Button
-                variant={activeTab === "security" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setActiveTab("security")}
-                className="gap-1.5"
-              >
-                <KeyRound className="h-4 w-4" />
-                Security & Password
-              </Button>
-            </div>
+            <QuizScoresList
+              quizResults={quizResults}
+              isLoading={isQuizResultsLoading}
+              page={quizzesPage}
+              pageCount={quizPagination.pageCount}
+              total={quizPagination.total}
+              onPageChange={setQuizzesPage}
+              onSelectResult={setSelectedQuizResult}
+            />
           </div>
+        )}
 
-          {activeTab === "overview" && (
-            <div className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="bg-card border-border/80 shadow-sm flex flex-col justify-between">
-                  <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-                    <span className="text-[11px] font-semibold tracking-wider text-muted-foreground">
-                      Assigned Role
-                    </span>
-                    {getRoleBadge()}
-                  </CardHeader>
-                  <CardContent className="pb-3">
-                    <div className="text-2xl font-bold text-foreground capitalize">
-                      {role?.name || roleType || "Standard User"}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
-                      {role?.description || "Platform access role"}
-                    </p>
-                  </CardContent>
-                </Card>
+        {activeTab === "security" && (
+          <SecurityTab
+            onChangePassword={handleChangePassword}
+            isChangingPassword={isChangingPassword}
+          />
+        )}
+      </main>
 
-                <Card className="bg-card border-border/80 shadow-sm flex flex-col justify-between">
-                  <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-                    <span className="text-[11px] font-semibold tracking-wider text-muted-foreground">
-                      Member Since
-                    </span>
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent className="pb-3">
-                    <div className="text-2xl font-bold text-foreground">
-                      {formatDate(user?.createdAt)}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Account created
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-4">
-                  <Card className="border-border/80 bg-card shadow-sm">
-                    <CardHeader>
-                      <CardTitle className="text-lg font-semibold">User Profile Information</CardTitle>
-                      <CardDescription className="text-xs">
-                        Details of your authenticated account in the system
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4 text-sm">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-1">
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <User className="h-3.5 w-3.5" />
-                            <span>Username</span>
-                          </div>
-                          <p className="font-semibold text-foreground">{user?.username}</p>
-                        </div>
-
-                        <div className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-1">
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <Mail className="h-3.5 w-3.5" />
-                            <span>Email Address</span>
-                          </div>
-                          <p className="font-semibold text-foreground">{user?.email}</p>
-                        </div>
-
-                        <div className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-1">
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <Shield className="h-3.5 w-3.5" />
-                            <span>Assigned Role</span>
-                          </div>
-                          <p className="font-semibold text-foreground capitalize">{role?.name || roleType || "Standard User"}</p>
-                        </div>
-
-                        <div className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-1">
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <Clock className="h-3.5 w-3.5" />
-                            <span>Last Updated</span>
-                          </div>
-                          <p className="font-semibold text-foreground">{formatDate(user?.updatedAt)}</p>
-                        </div>
-                      </div>
-
-                      <div className="p-3.5 rounded-lg bg-muted/30 border border-border/50">
-                        <span className="text-xs font-semibold text-muted-foreground tracking-wider">Role Permissions Summary:</span>
-                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                          {role?.description || "Your account has access based on your assigned system role."}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "security" && (
-            <div className="max-w-xl">
-              <Card className="border-border/80 bg-card shadow-md">
-                <CardHeader>
-                  <CardTitle className="text-lg">Change Password</CardTitle>
-                  <CardDescription className="text-xs">
-                    Update your password to keep your account secure
-                  </CardDescription>
-                </CardHeader>
-                <form onSubmit={handleSubmit(onChangePasswordSubmit)}>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="currentPassword" className="text-xs font-medium">
-                        Current Password
-                      </Label>
-                      <Input
-                        id="currentPassword"
-                        type="password"
-                        placeholder="••••••••"
-                        disabled={isChangingPassword}
-                        {...register("currentPassword")}
-                      />
-                      {errors.currentPassword && (
-                        <p className="text-xs text-destructive">{errors.currentPassword.message}</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="password" className="text-xs font-medium">
-                        New Password
-                      </Label>
-                      <Input
-                        id="password"
-                        type="password"
-                        placeholder="At least 6 characters"
-                        disabled={isChangingPassword}
-                        {...register("password")}
-                      />
-                      {errors.password && (
-                        <p className="text-xs text-destructive">{errors.password.message}</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="passwordConfirmation" className="text-xs font-medium">
-                        Confirm New Password
-                      </Label>
-                      <Input
-                        id="passwordConfirmation"
-                        type="password"
-                        placeholder="Re-enter new password"
-                        disabled={isChangingPassword}
-                        {...register("passwordConfirmation")}
-                      />
-                      {errors.passwordConfirmation && (
-                        <p className="text-xs text-destructive">{errors.passwordConfirmation.message}</p>
-                      )}
-                    </div>
-                  </CardContent>
-
-                  <CardFooter className="pt-2">
-                    <Button type="submit" disabled={isChangingPassword} className="gap-2 bg-primary text-white">
-                      {isChangingPassword ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Updating...
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle2 className="h-4 w-4" />
-                          Update Password
-                        </>
-                      )}
-                    </Button>
-                  </CardFooter>
-                </form>
-              </Card>
-            </div>
-          )}
-        </main>
-      </div>
+      <QuizResultModal
+        result={selectedQuizResult}
+        onClose={() => setSelectedQuizResult(null)}
+      />
+    </div>
   );
 }

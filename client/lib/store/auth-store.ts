@@ -1,9 +1,8 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { User, UserRoleType } from "@/types/auth";
+import type { User } from "@/types/auth";
 import {
   setCookie,
-  getCookie,
   removeCookie,
   COOKIE_AUTH_TOKEN,
   COOKIE_USER_ROLE,
@@ -26,7 +25,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       token: null,
       user: null,
       isAuthenticated: false,

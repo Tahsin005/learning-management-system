@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import { Navbar } from "@/components/layout/navbar";
 import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
@@ -36,7 +37,10 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-primary/20 selection:text-primary">
         <QueryProvider>
           <AuthProvider>
-            {children}
+            <Navbar />
+            <div className="flex-1 flex flex-col">
+              {children}
+            </div>
             <Toaster richColors position="top-right" />
           </AuthProvider>
         </QueryProvider>
