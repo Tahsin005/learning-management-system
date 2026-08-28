@@ -80,11 +80,23 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
       return ctx.unauthorized('Authentication required.');
     }
 
+    const { sort, filters: customFilters = {} } = ctx.query || {};
+
+    /** @type {Record<string, any>} */
+    const pagination = ctx.query && typeof ctx.query.pagination === 'object' && ctx.query.pagination !== null
+      ? /** @type {Record<string, any>} */ (ctx.query.pagination)
+      : {};
+
+    const page = pagination.page ? Math.max(1, parseInt(pagination.page, 10)) : 1;
+    const pageSize = pagination.pageSize ? Math.max(1, parseInt(pagination.pageSize, 10)) : 25;
+    const start = pagination.start !== undefined ? Math.max(0, parseInt(pagination.start, 10)) : (page - 1) * pageSize;
+    const limit = pagination.limit !== undefined ? Math.max(1, parseInt(pagination.limit, 10)) : pageSize;
+
     const roleName = user.role?.name || '';
     const roleType = user.role?.type || '';
 
     /** @type {Record<string, any>} */
-    const filters = {};
+    const filters = typeof customFilters === 'object' && customFilters !== null ? { ...customFilters } : {};
 
     // filter by student
     if (roleName === 'Student' || roleType === 'student') {
@@ -93,11 +105,16 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
       filters.course = { owner: { id: user.id } };
     }
 
-    const enrollments = await strapi.documents('api::enrollment.enrollment').findMany({
-      filters,
-      populate: ['course', 'student'],
-      sort: { createdAt: 'desc' },
-    });
+    const [enrollments, total] = await Promise.all([
+      strapi.documents('api::enrollment.enrollment').findMany({
+        filters,
+        populate: ['course', 'student'],
+        sort: /** @type {any} */ (sort) || { createdAt: 'desc' },
+        start,
+        limit,
+      }),
+      strapi.documents('api::enrollment.enrollment').count({ filters }),
+    ]);
 
     const sanitizedEnrollments = enrollments.map((e) => ({
       id: e.id,
@@ -128,10 +145,10 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
       data: sanitizedEnrollments,
       meta: {
         pagination: {
-          page: 1,
-          pageSize: sanitizedEnrollments.length,
-          pageCount: 1,
-          total: sanitizedEnrollments.length,
+          page: Math.floor(start / limit) + 1,
+          pageSize: limit,
+          pageCount: Math.ceil(total / limit) || 1,
+          total,
         },
       },
     });

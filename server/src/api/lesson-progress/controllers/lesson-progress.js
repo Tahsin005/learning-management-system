@@ -39,6 +39,21 @@ module.exports = createCoreController('api::lesson-progress.lesson-progress', ({
       return ctx.notFound('Lesson not found.');
     }
 
+    // verify student enrollment in the course
+    const courseDocId = lesson.course?.documentId;
+    if (courseDocId) {
+      const enrollment = await strapi.documents('api::enrollment.enrollment').findFirst({
+        filters: {
+          student: { id: user.id },
+          course: { documentId: courseDocId },
+        },
+      });
+
+      if (!enrollment) {
+        return ctx.forbidden('You must be enrolled in this course to track lesson progress.');
+      }
+    }
+
     // check if progress record already exists (Upsert logic)
     const existingProgress = await strapi.documents('api::lesson-progress.lesson-progress').findFirst({
       filters: {
@@ -83,11 +98,23 @@ module.exports = createCoreController('api::lesson-progress.lesson-progress', ({
       return ctx.unauthorized('Authentication required.');
     }
 
+    const { sort, filters: customFilters = {} } = ctx.query || {};
+
+    /** @type {Record<string, any>} */
+    const pagination = ctx.query && typeof ctx.query.pagination === 'object' && ctx.query.pagination !== null
+      ? /** @type {Record<string, any>} */ (ctx.query.pagination)
+      : {};
+
+    const page = pagination.page ? Math.max(1, parseInt(pagination.page, 10)) : 1;
+    const pageSize = pagination.pageSize ? Math.max(1, parseInt(pagination.pageSize, 10)) : 25;
+    const start = pagination.start !== undefined ? Math.max(0, parseInt(pagination.start, 10)) : (page - 1) * pageSize;
+    const limit = pagination.limit !== undefined ? Math.max(1, parseInt(pagination.limit, 10)) : pageSize;
+
     const roleName = user.role?.name || '';
     const roleType = user.role?.type || '';
 
     /** @type {Record<string, any>} */
-    const filters = {};
+    const filters = typeof customFilters === 'object' && customFilters !== null ? { ...customFilters } : {};
 
     // filter by student if role is Student
     if (roleName === 'Student' || roleType === 'student') {
@@ -96,11 +123,16 @@ module.exports = createCoreController('api::lesson-progress.lesson-progress', ({
       filters.lesson = { course: { owner: { id: user.id } } };
     }
 
-    const progresses = await strapi.documents('api::lesson-progress.lesson-progress').findMany({
-      filters,
-      populate: ['lesson', 'student'],
-      sort: { createdAt: 'desc' },
-    });
+    const [progresses, total] = await Promise.all([
+      strapi.documents('api::lesson-progress.lesson-progress').findMany({
+        filters,
+        populate: ['lesson', 'student'],
+        sort: /** @type {any} */ (sort) || { createdAt: 'desc' },
+        start,
+        limit,
+      }),
+      strapi.documents('api::lesson-progress.lesson-progress').count({ filters }),
+    ]);
 
     const sanitizedProgresses = progresses.map((p) => ({
       id: p.id,
@@ -131,10 +163,10 @@ module.exports = createCoreController('api::lesson-progress.lesson-progress', ({
       data: sanitizedProgresses,
       meta: {
         pagination: {
-          page: 1,
-          pageSize: sanitizedProgresses.length,
-          pageCount: 1,
-          total: sanitizedProgresses.length,
+          page: Math.floor(start / limit) + 1,
+          pageSize: limit,
+          pageCount: Math.ceil(total / limit) || 1,
+          total,
         },
       },
     });

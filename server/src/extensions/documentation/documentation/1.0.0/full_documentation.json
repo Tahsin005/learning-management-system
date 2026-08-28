@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2026-08-26T22:49:21.351Z"
+    "x-generation-date": "2026-08-28T07:01:32.248Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -6551,7 +6551,9 @@
               "title": {
                 "type": "string"
               },
-              "body": {},
+              "body": {
+                "type": "string"
+              },
               "coverImageUrl": {
                 "type": "string"
               },
@@ -6565,9 +6567,6 @@
                   }
                 ],
                 "example": "string or id"
-              },
-              "isPublished": {
-                "type": "boolean"
               },
               "locale": {
                 "type": "string"
@@ -6644,7 +6643,9 @@
           "title": {
             "type": "string"
           },
-          "body": {},
+          "body": {
+            "type": "string"
+          },
           "coverImageUrl": {
             "type": "string"
           },
@@ -7592,7 +7593,9 @@
                     "title": {
                       "type": "string"
                     },
-                    "description": {},
+                    "description": {
+                      "type": "string"
+                    },
                     "owner": {
                       "type": "object",
                       "properties": {
@@ -7632,7 +7635,9 @@
                           "title": {
                             "type": "string"
                           },
-                          "content": {},
+                          "content": {
+                            "type": "string"
+                          },
                           "videoUrl": {
                             "type": "string"
                           },
@@ -8431,9 +8436,6 @@
               }
             }
           },
-          "isPublished": {
-            "type": "boolean"
-          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -8506,7 +8508,9 @@
                 "title": {
                   "type": "string"
                 },
-                "body": {},
+                "body": {
+                  "type": "string"
+                },
                 "coverImageUrl": {
                   "type": "string"
                 },
@@ -8527,9 +8531,6 @@
                       "type": "string"
                     }
                   }
-                },
-                "isPublished": {
-                  "type": "boolean"
                 },
                 "createdAt": {
                   "type": "string",
@@ -8653,7 +8654,9 @@
               "title": {
                 "type": "string"
               },
-              "description": {},
+              "description": {
+                "type": "string"
+              },
               "owner": {
                 "oneOf": [
                   {
@@ -8782,7 +8785,9 @@
           "title": {
             "type": "string"
           },
-          "description": {},
+          "description": {
+            "type": "string"
+          },
           "owner": {
             "type": "object",
             "properties": {
@@ -9727,7 +9732,9 @@
                     "title": {
                       "type": "string"
                     },
-                    "description": {},
+                    "description": {
+                      "type": "string"
+                    },
                     "owner": {
                       "type": "object",
                       "properties": {
@@ -9767,7 +9774,9 @@
                           "title": {
                             "type": "string"
                           },
-                          "content": {},
+                          "content": {
+                            "type": "string"
+                          },
                           "videoUrl": {
                             "type": "string"
                           },
@@ -11765,7 +11774,9 @@
                     "title": {
                       "type": "string"
                     },
-                    "description": {},
+                    "description": {
+                      "type": "string"
+                    },
                     "owner": {
                       "type": "object",
                       "properties": {
@@ -11805,7 +11816,9 @@
                           "title": {
                             "type": "string"
                           },
-                          "content": {},
+                          "content": {
+                            "type": "string"
+                          },
                           "videoUrl": {
                             "type": "string"
                           },
@@ -14490,7 +14503,9 @@
               "title": {
                 "type": "string"
               },
-              "content": {},
+              "content": {
+                "type": "string"
+              },
               "videoUrl": {
                 "type": "string"
               },
@@ -14583,7 +14598,9 @@
           "title": {
             "type": "string"
           },
-          "content": {},
+          "content": {
+            "type": "string"
+          },
           "videoUrl": {
             "type": "string"
           },
@@ -14609,7 +14626,9 @@
               "title": {
                 "type": "string"
               },
-              "description": {},
+              "description": {
+                "type": "string"
+              },
               "owner": {
                 "type": "object",
                 "properties": {
@@ -15742,7 +15761,9 @@
                             "title": {
                               "type": "string"
                             },
-                            "content": {},
+                            "content": {
+                              "type": "string"
+                            },
                             "videoUrl": {
                               "type": "string"
                             },
@@ -17512,7 +17533,9 @@
                     "title": {
                       "type": "string"
                     },
-                    "description": {},
+                    "description": {
+                      "type": "string"
+                    },
                     "owner": {
                       "type": "object",
                       "properties": {
@@ -17552,7 +17575,9 @@
                           "title": {
                             "type": "string"
                           },
-                          "content": {},
+                          "content": {
+                            "type": "string"
+                          },
                           "videoUrl": {
                             "type": "string"
                           },
@@ -18584,7 +18609,9 @@
               "title": {
                 "type": "string"
               },
-              "description": {},
+              "description": {
+                "type": "string"
+              },
               "owner": {
                 "type": "object",
                 "properties": {
@@ -19717,7 +19744,9 @@
                             "title": {
                               "type": "string"
                             },
-                            "content": {},
+                            "content": {
+                              "type": "string"
+                            },
                             "videoUrl": {
                               "type": "string"
                             },
@@ -21497,7 +21526,9 @@
                     "title": {
                       "type": "string"
                     },
-                    "description": {},
+                    "description": {
+                      "type": "string"
+                    },
                     "owner": {
                       "type": "object",
                       "properties": {
@@ -21537,7 +21568,9 @@
                           "title": {
                             "type": "string"
                           },
-                          "content": {},
+                          "content": {
+                            "type": "string"
+                          },
                           "videoUrl": {
                             "type": "string"
                           },

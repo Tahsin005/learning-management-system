@@ -9,6 +9,16 @@ module.exports = createCoreController('api::course.course', ({ strapi }) => ({
       return ctx.unauthorized('Authentication required to create a course.');
     }
 
+    const roleName = user.role?.name || '';
+    const roleType = user.role?.type || '';
+    const canCreate =
+      ['Admin', 'Content Manager', 'Instructor'].includes(roleName) ||
+      ['admin', 'content_manager', 'instructor'].includes(roleType);
+
+    if (!canCreate) {
+      return ctx.forbidden('Only instructors, content managers, and administrators can create courses.');
+    }
+
     const payload = ctx.request.body?.data || ctx.request.body || {};
 
     let ownerId = payload.owner;
@@ -24,18 +34,50 @@ module.exports = createCoreController('api::course.course', ({ strapi }) => ({
       populate: ['owner'],
     });
 
+    const sanitizedCourse = {
+      ...course,
+      owner: course.owner
+        ? {
+            id: course.owner.id,
+            documentId: course.owner.documentId,
+            username: course.owner.username,
+            email: course.owner.email,
+          }
+        : null,
+    };
+
     return ctx.created({
-      data: course,
+      data: sanitizedCourse,
     });
   },
 
   async find(ctx) {
-    const { populate, sort } = ctx.query || {};
+    const { populate, sort, filters = {} } = ctx.query || {};
 
-    const courses = await strapi.documents('api::course.course').findMany({
-      populate: ['owner', 'lessons', 'quizzes'],
-      sort: /** @type {any} */ (sort) || { createdAt: 'desc' },
-    });
+    /** @type {Record<string, any>} */
+    const pagination = ctx.query && typeof ctx.query.pagination === 'object' && ctx.query.pagination !== null
+      ? /** @type {Record<string, any>} */ (ctx.query.pagination)
+      : {};
+
+    const page = pagination.page ? Math.max(1, parseInt(pagination.page, 10)) : 1;
+    const pageSize = pagination.pageSize ? Math.max(1, parseInt(pagination.pageSize, 10)) : 25;
+    const start = pagination.start !== undefined ? Math.max(0, parseInt(pagination.start, 10)) : (page - 1) * pageSize;
+    const limit = pagination.limit !== undefined ? Math.max(1, parseInt(pagination.limit, 10)) : pageSize;
+
+    const queryFilters = typeof filters === 'object' && filters !== null ? filters : {};
+
+    const [courses, total] = await Promise.all([
+      strapi.documents('api::course.course').findMany({
+        filters: queryFilters,
+        populate: ['owner', 'lessons', 'quizzes'],
+        sort: /** @type {any} */ (sort) || { createdAt: 'desc' },
+        start,
+        limit,
+      }),
+      strapi.documents('api::course.course').count({
+        filters: queryFilters,
+      }),
+    ]);
 
     const sanitizedCourses = courses.map((c) => ({
       id: c.id,
@@ -61,10 +103,10 @@ module.exports = createCoreController('api::course.course', ({ strapi }) => ({
       data: sanitizedCourses,
       meta: {
         pagination: {
-          page: 1,
-          pageSize: sanitizedCourses.length,
-          pageCount: 1,
-          total: sanitizedCourses.length,
+          page: Math.floor(start / limit) + 1,
+          pageSize: limit,
+          pageCount: Math.ceil(total / limit) || 1,
+          total,
         },
       },
     });
@@ -110,6 +152,82 @@ module.exports = createCoreController('api::course.course', ({ strapi }) => ({
         quizzes: course.quizzes || [],
       },
     });
+  },
+
+  async update(ctx) {
+    const { user } = ctx.state;
+    if (!user) {
+      return ctx.unauthorized('Authentication required.');
+    }
+
+    const { id } = ctx.params;
+    let course = await strapi.documents('api::course.course').findOne({
+      documentId: id,
+      populate: ['owner'],
+    });
+
+    if (!course) {
+      course = await strapi.query('api::course.course').findOne({
+        where: { id },
+        populate: ['owner'],
+      });
+    }
+
+    if (!course) {
+      return ctx.notFound('Course not found.');
+    }
+
+    const roleName = user.role?.name || '';
+    const roleType = user.role?.type || '';
+
+    const canManage =
+      ['Admin', 'Content Manager'].includes(roleName) ||
+      ['admin', 'content_manager'].includes(roleType) ||
+      course.owner?.id === user.id;
+
+    if (!canManage) {
+      return ctx.forbidden('You do not have permission to modify this course. You can only manage courses you own.');
+    }
+
+    return super.update(ctx);
+  },
+
+  async delete(ctx) {
+    const { user } = ctx.state;
+    if (!user) {
+      return ctx.unauthorized('Authentication required.');
+    }
+
+    const { id } = ctx.params;
+    let course = await strapi.documents('api::course.course').findOne({
+      documentId: id,
+      populate: ['owner'],
+    });
+
+    if (!course) {
+      course = await strapi.query('api::course.course').findOne({
+        where: { id },
+        populate: ['owner'],
+      });
+    }
+
+    if (!course) {
+      return ctx.notFound('Course not found.');
+    }
+
+    const roleName = user.role?.name || '';
+    const roleType = user.role?.type || '';
+
+    const canManage =
+      ['Admin', 'Content Manager'].includes(roleName) ||
+      ['admin', 'content_manager'].includes(roleType) ||
+      course.owner?.id === user.id;
+
+    if (!canManage) {
+      return ctx.forbidden('You do not have permission to delete this course. You can only manage courses you own.');
+    }
+
+    return super.delete(ctx);
   },
 
   async progress(ctx) {

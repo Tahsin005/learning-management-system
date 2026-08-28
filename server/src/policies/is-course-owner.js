@@ -1,8 +1,13 @@
 'use strict';
 
+const { errors } = require('@strapi/utils');
+const { ForbiddenError, UnauthorizedError, NotFoundError } = errors;
+
 module.exports = async (ctx, config, { strapi }) => {
   let { user } = ctx.state;
-  if (!user) return false;
+  if (!user) {
+    throw new UnauthorizedError('Authentication is required.');
+  }
 
   // ensure role is populated
   if (!user.role || typeof user.role === 'number' || typeof user.role === 'string') {
@@ -24,7 +29,9 @@ module.exports = async (ctx, config, { strapi }) => {
   // instructor must own the course
   if (roleName === 'Instructor' || roleType === 'instructor') {
     const { id } = ctx.params;
-    if (!id) return false;
+    if (!id) {
+      throw new ForbiddenError('Course identifier is required.');
+    }
 
     let course = await strapi.documents('api::course.course').findOne({
       documentId: id,
@@ -38,8 +45,16 @@ module.exports = async (ctx, config, { strapi }) => {
       });
     }
 
-    return course?.owner?.id === user.id;
+    if (!course) {
+      throw new NotFoundError('Course not found.');
+    }
+
+    if (course?.owner?.id !== user.id) {
+      throw new ForbiddenError('You do not have permission to modify or delete this course. You can only manage courses you own.');
+    }
+
+    return true;
   }
 
-  return false;
+  throw new ForbiddenError('You do not have permission to perform this action on courses.');
 };

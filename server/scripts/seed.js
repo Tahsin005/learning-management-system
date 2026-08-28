@@ -291,17 +291,7 @@ async function seedLmsData() {
   const course = await strapi.documents('api::course.course').create({
     data: {
       title: 'Full-Stack Next.js and Strapi Mastery',
-      description: [
-        {
-          type: 'paragraph',
-          children: [
-            {
-              type: 'text',
-              text: 'Comprehensive hands-on course covering modern web development with Next.js App Router, TailwindCSS, and Strapi v5 Headless CMS.',
-            },
-          ],
-        },
-      ],
+      description: 'Comprehensive hands-on course covering modern web development with Next.js App Router, TailwindCSS, and Strapi v5 Headless CMS.',
       owner: instructorUser.id,
     },
   });
@@ -310,17 +300,7 @@ async function seedLmsData() {
   const lesson1 = await strapi.documents('api::lesson.lesson').create({
     data: {
       title: '1. Introduction to Headless Architecture',
-      content: [
-        {
-          type: 'paragraph',
-          children: [
-            {
-              type: 'text',
-              text: 'In this lesson, we introduce the decoupled architecture separating Next.js on the frontend from Strapi v5 on the backend.',
-            },
-          ],
-        },
-      ],
+      content: '# Introduction to Headless Architecture\n\nIn this lesson, we introduce the decoupled architecture separating Next.js on the frontend from Strapi v5 on the backend.\n\n### Key Concepts:\n- Decoupled Frontend & Backend\n- Next.js App Router SSR/SSG\n- Strapi v5 REST & GraphQL APIs',
       videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
       order: 1,
       course: course.documentId,
@@ -330,17 +310,7 @@ async function seedLmsData() {
   const lesson2 = await strapi.documents('api::lesson.lesson').create({
     data: {
       title: '2. Role-Based Access Control (RBAC) in Strapi v5',
-      content: [
-        {
-          type: 'paragraph',
-          children: [
-            {
-              type: 'text',
-              text: 'Deep dive into implementing custom policies, secure auto-grading controllers, and document ownership checks.',
-            },
-          ],
-        },
-      ],
+      content: '# Role-Based Access Control (RBAC)\n\nDeep dive into implementing custom policies, secure auto-grading controllers, and document ownership checks.\n\n### Matrix:\n1. Admin\n2. Content Manager\n3. Instructor\n4. Student',
       videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
       order: 2,
       course: course.documentId,
@@ -386,19 +356,8 @@ async function seedLmsData() {
   await strapi.documents('api::blog-post.blog-post').create({
     data: {
       title: 'Building Enterprise LMS with Strapi v5 & Next.js',
-      body: [
-        {
-          type: 'paragraph',
-          children: [
-            {
-              type: 'text',
-              text: 'Discover best practices for building secure, scalable learning management platforms with role-based access control.',
-            },
-          ],
-        },
-      ],
+      body: '# Building Enterprise LMS with Strapi v5 & Next.js\n\nDiscover best practices for building secure, scalable learning management platforms with role-based access control.\n\n### Highlights:\n- Next.js 15 Client & Server Components\n- Strapi v5 Document Service\n- HttpOnly Refresh Token Rotation',
       author: cmUser.id,
-      isPublished: true,
       publishedAt: new Date(),
     },
   });

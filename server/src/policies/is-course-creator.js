@@ -1,8 +1,13 @@
 'use strict';
 
+const { errors } = require('@strapi/utils');
+const { ForbiddenError, UnauthorizedError } = errors;
+
 module.exports = async (ctx, config, { strapi }) => {
   let { user } = ctx.state;
-  if (!user) return false;
+  if (!user) {
+    throw new UnauthorizedError('Authentication is required to create a course.');
+  }
 
   if (!user.role || typeof user.role === 'number' || typeof user.role === 'string') {
     user = await strapi.query('plugin::users-permissions.user').findOne({
@@ -16,8 +21,13 @@ module.exports = async (ctx, config, { strapi }) => {
   const roleType = user.role?.type || '';
 
   // admin, content manager, and instructor can create courses
-  return (
+  const canCreate =
     ['Admin', 'Content Manager', 'Instructor'].includes(roleName) ||
-    ['admin', 'content_manager', 'instructor'].includes(roleType)
-  );
+    ['admin', 'content_manager', 'instructor'].includes(roleType);
+
+  if (!canCreate) {
+    throw new ForbiddenError('Only instructors, content managers, and administrators are permitted to create courses.');
+  }
+
+  return true;
 };

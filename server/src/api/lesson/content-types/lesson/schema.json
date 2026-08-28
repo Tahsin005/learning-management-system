@@ -15,7 +15,7 @@
       "type": "string"
     },
     "content": {
-      "type": "blocks"
+      "type": "richtext"
     },
     "videoUrl": {
       "type": "string"

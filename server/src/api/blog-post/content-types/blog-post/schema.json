@@ -15,7 +15,7 @@
       "type": "string"
     },
     "body": {
-      "type": "blocks"
+      "type": "richtext"
     },
     "coverImageUrl": {
       "type": "string"
@@ -24,10 +24,6 @@
       "type": "relation",
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user"
-    },
-    "isPublished": {
-      "type": "boolean",
-      "default": false
     }
   }
 }

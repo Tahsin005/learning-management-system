@@ -137,10 +137,30 @@ module.exports = createCoreController('api::quiz.quiz', ({ strapi }) => ({
       (['Admin', 'Content Manager', 'Instructor'].includes(user.role?.name) ||
         ['admin', 'content_manager', 'instructor'].includes(user.role?.type));
 
-    const quizzes = await strapi.documents('api::quiz.quiz').findMany({
-      populate: ['questions', 'course'],
-      sort: { createdAt: 'desc' },
-    });
+    const { sort, filters: customFilters = {} } = ctx.query || {};
+
+    /** @type {Record<string, any>} */
+    const pagination = ctx.query && typeof ctx.query.pagination === 'object' && ctx.query.pagination !== null
+      ? /** @type {Record<string, any>} */ (ctx.query.pagination)
+      : {};
+
+    const page = pagination.page ? Math.max(1, parseInt(pagination.page, 10)) : 1;
+    const pageSize = pagination.pageSize ? Math.max(1, parseInt(pagination.pageSize, 10)) : 25;
+    const start = pagination.start !== undefined ? Math.max(0, parseInt(pagination.start, 10)) : (page - 1) * pageSize;
+    const limit = pagination.limit !== undefined ? Math.max(1, parseInt(pagination.limit, 10)) : pageSize;
+
+    const filters = typeof customFilters === 'object' && customFilters !== null ? customFilters : {};
+
+    const [quizzes, total] = await Promise.all([
+      strapi.documents('api::quiz.quiz').findMany({
+        filters,
+        populate: ['questions', 'course'],
+        sort: /** @type {any} */ (sort) || { createdAt: 'desc' },
+        start,
+        limit,
+      }),
+      strapi.documents('api::quiz.quiz').count({ filters }),
+    ]);
 
     const sanitizedQuizzes = quizzes.map((q) => {
       const copy = { ...q };
@@ -152,10 +172,10 @@ module.exports = createCoreController('api::quiz.quiz', ({ strapi }) => ({
       data: sanitizedQuizzes,
       meta: {
         pagination: {
-          page: 1,
-          pageSize: sanitizedQuizzes.length,
-          pageCount: 1,
-          total: sanitizedQuizzes.length,
+          page: Math.floor(start / limit) + 1,
+          pageSize: limit,
+          pageCount: Math.ceil(total / limit) || 1,
+          total,
         },
       },
     });

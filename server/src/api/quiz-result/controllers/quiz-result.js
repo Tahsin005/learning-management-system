@@ -34,6 +34,21 @@ module.exports = createCoreController('api::quiz-result.quiz-result', ({ strapi 
       return ctx.notFound('Quiz not found.');
     }
 
+    // verify student enrollment in the course
+    const courseDocId = quiz.course?.documentId;
+    if (courseDocId) {
+      const enrollment = await strapi.documents('api::enrollment.enrollment').findFirst({
+        filters: {
+          student: { id: user.id },
+          course: { documentId: courseDocId },
+        },
+      });
+
+      if (!enrollment) {
+        return ctx.forbidden('You must be enrolled in this course to take and submit this quiz.');
+      }
+    }
+
     const questions = quiz.questions || [];
     const totalQuestions = questions.length;
     let score = 0;
@@ -99,22 +114,39 @@ module.exports = createCoreController('api::quiz-result.quiz-result', ({ strapi 
       return ctx.unauthorized('Authentication required.');
     }
 
+    const { sort, filters: customFilters = {} } = ctx.query || {};
+
+    /** @type {Record<string, any>} */
+    const pagination = ctx.query && typeof ctx.query.pagination === 'object' && ctx.query.pagination !== null
+      ? /** @type {Record<string, any>} */ (ctx.query.pagination)
+      : {};
+
+    const page = pagination.page ? Math.max(1, parseInt(pagination.page, 10)) : 1;
+    const pageSize = pagination.pageSize ? Math.max(1, parseInt(pagination.pageSize, 10)) : 25;
+    const start = pagination.start !== undefined ? Math.max(0, parseInt(pagination.start, 10)) : (page - 1) * pageSize;
+    const limit = pagination.limit !== undefined ? Math.max(1, parseInt(pagination.limit, 10)) : pageSize;
+
     const roleName = user.role?.name || '';
     const roleType = user.role?.type || '';
 
     /** @type {Record<string, any>} */
-    const filters = {};
+    const filters = typeof customFilters === 'object' && customFilters !== null ? { ...customFilters } : {};
 
     // if student, strictly filter to student's own results
     if (roleName === 'Student' || roleType === 'student') {
       filters.student = { id: user.id };
     }
 
-    const results = await strapi.documents('api::quiz-result.quiz-result').findMany({
-      filters,
-      populate: ['quiz', 'student'],
-      sort: { createdAt: 'desc' },
-    });
+    const [results, total] = await Promise.all([
+      strapi.documents('api::quiz-result.quiz-result').findMany({
+        filters,
+        populate: ['quiz', 'student'],
+        sort: /** @type {any} */ (sort) || { createdAt: 'desc' },
+        start,
+        limit,
+      }),
+      strapi.documents('api::quiz-result.quiz-result').count({ filters }),
+    ]);
 
     const sanitizedResults = results.map((r) => ({
       id: r.id,
@@ -147,10 +179,10 @@ module.exports = createCoreController('api::quiz-result.quiz-result', ({ strapi 
       data: sanitizedResults,
       meta: {
         pagination: {
-          page: 1,
-          pageSize: sanitizedResults.length,
-          pageCount: 1,
-          total: sanitizedResults.length,
+          page: Math.floor(start / limit) + 1,
+          pageSize: limit,
+          pageCount: Math.ceil(total / limit) || 1,
+          total,
         },
       },
     });

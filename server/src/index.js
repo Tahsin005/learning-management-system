@@ -170,6 +170,20 @@ module.exports = {
       if (contentManagerRole) await grantPermissions(strapi, contentManagerRole.id, contentManagerActions);
       if (adminRole) await grantPermissions(strapi, adminRole.id, adminActions);
 
+      // set default registration role to 'student'
+      const pluginStore = strapi.store({ type: 'plugin', name: 'users-permissions' });
+      const advanced = await pluginStore.get({ key: 'advanced' });
+      if (advanced && advanced.default_role !== 'student') {
+        await pluginStore.set({
+          key: 'advanced',
+          value: {
+            ...advanced,
+            default_role: 'student',
+          },
+        });
+        strapi.log.info('[Bootstrap] Set default registration role to "student"');
+      }
+
       strapi.log.info('[Bootstrap] LMS Roles and Permissions initialized successfully.');
     } catch (error) {
       strapi.log.error('[Bootstrap] Failed to initialize roles and permissions:', error);
