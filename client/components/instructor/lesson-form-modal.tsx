@@ -65,13 +65,8 @@ export function LessonFormModal({
     }
   }, [lesson, reset, isOpen]);
 
-  const handleFormSubmit = async (values: LessonFormValues) => {
-    try {
-      await onSubmit(values);
-      onClose();
-    } catch {
-      // handled by mutation
-    }
+  const handleFormSubmit = (values: LessonFormValues) => {
+    onSubmit(values);
   };
 
   return (

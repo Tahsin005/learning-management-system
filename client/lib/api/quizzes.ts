@@ -67,9 +67,10 @@ export const quizzesApi = {
     return apiClient.get<StrapiListResponse<QuizResultRecord>>(`/api/quiz-results?${query.toString()}`);
   },
 
-  async getCourseQuizResults(courseDocId?: string): Promise<StrapiListResponse<QuizResultRecord>> {
+  async getCourseQuizResults(courseDocId?: string, page = 1, pageSize = 100): Promise<StrapiListResponse<QuizResultRecord>> {
     const query = new URLSearchParams({
-      "pagination[pageSize]": "100",
+      "pagination[page]": String(page),
+      "pagination[pageSize]": String(pageSize),
       populate: "*",
       sort: "submittedAt:desc",
     });

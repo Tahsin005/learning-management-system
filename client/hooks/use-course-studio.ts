@@ -31,8 +31,13 @@ export function useCourseStudio(courseDocId: string) {
   const { data: courseData, isLoading: isCourseLoading, isError } = useCourseQuery(courseDocId);
   const { data: lessonsData, isLoading: isLessonsLoading } = useLessonsByCourseQuery(courseDocId);
   const { data: quizzesData, isLoading: isQuizzesLoading } = useQuizzesByCourseQuery(courseDocId);
-  const { data: enrollmentsData, isLoading: isEnrollmentsLoading } = useMyEnrollmentsQuery(1, 100, isAuthenticated);
-  const { data: quizResultsData } = useCourseQuizResultsQuery(courseDocId, isAuthenticated);
+  const { data: enrollmentsData, isLoading: isEnrollmentsLoading } = useMyEnrollmentsQuery(
+    1,
+    100,
+    isAuthenticated,
+    courseDocId
+  );
+  const { data: quizResultsData } = useCourseQuizResultsQuery(courseDocId, 1, 100, isAuthenticated);
 
   const createLessonMutation = useCreateLessonMutation(courseDocId);
   const updateLessonMutation = useUpdateLessonMutation(courseDocId);
@@ -116,22 +121,38 @@ export function useCourseStudio(courseDocId: string) {
 
   const updateQuiz = (
     documentId: string,
-    values: { title: string; questions: Omit<QuizQuestion, "id">[] },
+    values: { title: string; questions?: Omit<QuizQuestion, "id">[] },
     onSuccess?: () => void
   ) => {
-    const questions = values.questions.map((q) => ({
-      questionText: q.questionText,
-      options: q.options,
-      correctAnswerIndex: q.correctAnswerIndex ?? 0,
-    }));
+    const existing = quizzes.find(
+      (q) => String(q.documentId || q.id) === String(documentId)
+    );
+
+    const updatePayload: { title?: string; questions?: { questionText: string; options: string[]; correctAnswerIndex: number }[] } = {
+      title: values.title,
+    };
+
+    if (values.questions) {
+      const existingClean = (existing?.questions || []).map((q) => ({
+        questionText: q.questionText,
+        options: q.options,
+        correctAnswerIndex: q.correctAnswerIndex ?? 0,
+      }));
+      const incomingClean = values.questions.map((q) => ({
+        questionText: q.questionText,
+        options: q.options,
+        correctAnswerIndex: q.correctAnswerIndex ?? 0,
+      }));
+
+      if (JSON.stringify(existingClean) !== JSON.stringify(incomingClean)) {
+        updatePayload.questions = incomingClean;
+      }
+    }
 
     updateQuizMutation.mutate(
       {
         documentId,
-        data: {
-          title: values.title,
-          questions,
-        },
+        data: updatePayload,
       },
       {
         onSuccess: () => onSuccess?.(),

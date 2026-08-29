@@ -324,7 +324,11 @@ export default function CourseStudioPage({ params }: CourseStudioPageProps) {
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground truncate max-w-md mt-0.5">
-                          {lesson.content ? lesson.content.slice(0, 80) + "..." : "No notes content"}
+                          {lesson.content
+                            ? lesson.content.length > 80
+                              ? lesson.content.slice(0, 80) + "..."
+                              : lesson.content
+                            : "No notes content"}
                         </p>
                       </div>
                     </div>

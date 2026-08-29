@@ -149,19 +149,14 @@ function QuizBuilderForm({
     }
 
     setValidationError(null);
-    try {
-      await onSubmit(
-        title.trim(),
-        questions.map((q) => ({
-          questionText: q.questionText.trim(),
-          options: q.options.map((o) => o.trim()),
-          correctAnswerIndex: q.correctAnswerIndex,
-        }))
-      );
-      onClose();
-    } catch {
-      // Handled by parent mutation
-    }
+    onSubmit(
+      title.trim(),
+      questions.map((q) => ({
+        questionText: q.questionText.trim(),
+        options: q.options.map((o) => o.trim()),
+        correctAnswerIndex: q.correctAnswerIndex,
+      }))
+    );
   };
 
   return (

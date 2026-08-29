@@ -51,8 +51,11 @@ export function StudentProgressTable({
   const getStudentCourseResults = (studentId: number) => {
     return quizResults.filter((r) => {
       if (r.student?.id !== studentId) return false;
-      if (currentCourseDocId && r.quiz?.course?.documentId) {
-        return r.quiz.course.documentId === currentCourseDocId;
+      if (currentCourseDocId) {
+        return (
+          r.quiz?.course?.documentId === currentCourseDocId ||
+          String(r.quiz?.course?.id) === String(currentCourseDocId)
+        );
       }
       return true;
     });
@@ -115,7 +118,12 @@ export function StudentProgressTable({
 
                 const completedLessons = enr.completedLessons || 0;
                 const studentResults = getStudentCourseResults(sId);
-                const completedQuizzes = studentResults.length > 0 ? studentResults.length : (enr.completedQuizzes || 0);
+                const distinctQuizIds = new Set(
+                  studentResults
+                    .map((r) => r.quiz?.documentId || (r.quiz?.id ? String(r.quiz.id) : null))
+                    .filter(Boolean)
+                );
+                const completedQuizzes = distinctQuizIds.size > 0 ? distinctQuizIds.size : (enr.completedQuizzes || 0);
 
                 const totalItems = totalLessons + totalQuizzes;
                 const completedItems = Math.min(completedLessons, totalLessons) + Math.min(completedQuizzes, totalQuizzes);

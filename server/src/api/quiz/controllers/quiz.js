@@ -69,13 +69,21 @@ module.exports = createCoreController('api::quiz.quiz', ({ strapi }) => ({
     const { id } = ctx.params;
     let quiz = await strapi.documents('api::quiz.quiz').findOne({
       documentId: id,
-      populate: ['course.owner'],
+      populate: {
+        course: {
+          populate: ['owner'],
+        },
+      },
     });
 
     if (!quiz) {
       quiz = await strapi.query('api::quiz.quiz').findOne({
         where: { id },
-        populate: ['course.owner'],
+        populate: {
+          course: {
+            populate: ['owner'],
+          },
+        },
       });
     }
 
@@ -95,17 +103,22 @@ module.exports = createCoreController('api::quiz.quiz', ({ strapi }) => ({
     const quizDocId = quiz.documentId || quiz.id;
     const payload = ctx.request.body?.data || ctx.request.body || {};
 
-    // If instructor modified the questions/answer keys, reset obsolete past submissions for this quiz
-    if (payload.questions && Array.isArray(payload.questions)) {
-      const oldResults = await strapi.documents('api::quiz-result.quiz-result').findMany({
-        filters: { quiz: { documentId: quizDocId } },
-      });
-      for (const r of oldResults) {
-        await strapi.documents('api::quiz-result.quiz-result').delete({ documentId: r.documentId });
+    let updateRes;
+    await strapi.db.transaction(async () => {
+      // If instructor modified the questions/answer keys, reset obsolete past submissions for this quiz
+      if (payload.questions && Array.isArray(payload.questions)) {
+        const oldResults = await strapi.documents('api::quiz-result.quiz-result').findMany({
+          filters: { quiz: { documentId: quizDocId } },
+        });
+        for (const r of oldResults) {
+          await strapi.documents('api::quiz-result.quiz-result').delete({ documentId: r.documentId });
+        }
       }
-    }
 
-    return super.update(ctx);
+      updateRes = await super.update(ctx);
+    });
+
+    return updateRes;
   },
 
   async delete(ctx) {
@@ -117,13 +130,21 @@ module.exports = createCoreController('api::quiz.quiz', ({ strapi }) => ({
     const { id } = ctx.params;
     let quiz = await strapi.documents('api::quiz.quiz').findOne({
       documentId: id,
-      populate: ['course.owner'],
+      populate: {
+        course: {
+          populate: ['owner'],
+        },
+      },
     });
 
     if (!quiz) {
       quiz = await strapi.query('api::quiz.quiz').findOne({
         where: { id },
-        populate: ['course.owner'],
+        populate: {
+          course: {
+            populate: ['owner'],
+          },
+        },
       });
     }
 
@@ -140,17 +161,19 @@ module.exports = createCoreController('api::quiz.quiz', ({ strapi }) => ({
       return ctx.forbidden('You do not have permission to delete this quiz.');
     }
 
-    const quizDocId = quiz.documentId || quiz.id;
+    const quizDocId = String(quiz.documentId || quiz.id);
 
-    // Cascade delete associated quiz result records
-    const results = await strapi.documents('api::quiz-result.quiz-result').findMany({
-      filters: { quiz: { documentId: quizDocId } },
+    await strapi.db.transaction(async () => {
+      // Cascade delete associated quiz result records
+      const results = await strapi.documents('api::quiz-result.quiz-result').findMany({
+        filters: { quiz: { documentId: quizDocId } },
+      });
+      for (const r of results) {
+        await strapi.documents('api::quiz-result.quiz-result').delete({ documentId: r.documentId });
+      }
+
+      await strapi.documents('api::quiz.quiz').delete({ documentId: quizDocId });
     });
-    for (const r of results) {
-      await strapi.documents('api::quiz-result.quiz-result').delete({ documentId: r.documentId });
-    }
-
-    await strapi.documents('api::quiz.quiz').delete({ documentId: quizDocId });
 
     return ctx.send({
       message: 'Quiz and associated submission results deleted successfully.',

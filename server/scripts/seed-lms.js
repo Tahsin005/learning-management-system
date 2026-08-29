@@ -23,12 +23,18 @@ async function seedDatabase() {
     const instructorRole = await getRole('instructor');
     const studentRole = await getRole('student');
 
-    console.log('Found roles:', {
-      admin: adminRole?.id,
-      content_manager: cmRole?.id,
-      instructor: instructorRole?.id,
-      student: studentRole?.id,
-    });
+    if (!adminRole || !cmRole || !instructorRole || !studentRole) {
+      throw new Error(
+        `Required roles missing for seeding. Found: ${JSON.stringify({
+          admin: adminRole?.id,
+          content_manager: cmRole?.id,
+          instructor: instructorRole?.id,
+          student: studentRole?.id,
+        })}`
+      );
+    }
+
+    console.log('Roles verified successfully.');
 
     console.log('Purging existing data (quiz results, progresses, enrollments, quizzes, lessons, courses, blogs, users)...');
     
@@ -72,14 +78,16 @@ async function seedDatabase() {
     }
 
     const allUsers = await strapi.query('plugin::users-permissions.user').findMany({});
+    console.log(`Purging ${allUsers.length} existing user records...`);
     for (const u of allUsers) {
-      console.log(`Deleting user: ${u.email}`);
       await strapi.query('plugin::users-permissions.user').delete({ where: { id: u.id } });
     }
 
+    const defaultSeedPassword = process.env.SEED_DEFAULT_PASSWORD || 'Tahsin005';
+
     console.log('Provisioning fresh standard users...');
-    const createUser = async ({ username, email, password, roleId }) => {
-      console.log(`Creating user: ${email} (${username})`);
+    const createUser = async ({ username, email, password = defaultSeedPassword, roleId }) => {
+      console.log(`Creating user: ${username}`);
       return strapi.plugin('users-permissions').service('user').add({
         username,
         email: email.toLowerCase(),
@@ -94,35 +102,30 @@ async function seedDatabase() {
     const adminUser = await createUser({
       username: 'tahsin_admin',
       email: 'tahsin.admin@gmail.com',
-      password: 'Tahsin005',
       roleId: adminRole.id,
     });
 
     const cmUser = await createUser({
       username: 'tahsin_content',
       email: 'tahsin.con@gmail.com',
-      password: 'Tahsin005',
       roleId: cmRole.id,
     });
 
     const instructor1 = await createUser({
       username: 'tahsin_instructor',
       email: 'tahsin.ins@gmail.com',
-      password: 'Tahsin005',
       roleId: instructorRole.id,
     });
 
     const instructor2 = await createUser({
       username: 'tahsin_instructor_lead',
       email: 'tahsin.ins1@gmail.com',
-      password: 'Tahsin005',
       roleId: instructorRole.id,
     });
 
     const studentUser = await createUser({
       username: 'tahsin_student',
       email: 'tahsin.stu@gmail.com',
-      password: 'Tahsin005',
       roleId: studentRole.id,
     });
 

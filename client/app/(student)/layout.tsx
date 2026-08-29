@@ -59,7 +59,29 @@ export default function StudentLayout({
     );
   }
 
-  if (roleType && !["student", "admin"].includes(roleType)) {
+  if (!roleType || !["student", "admin"].includes(roleType)) {
+    if (!roleType) {
+      return (
+        <div className="flex flex-1 flex-col items-center justify-center p-8 text-center space-y-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive border border-destructive/20">
+            <ShieldAlert className="h-7 w-7" />
+          </div>
+          <div className="space-y-1.5">
+            <h2 className="text-xl font-bold text-foreground">Access Restricted</h2>
+            <p className="text-xs text-muted-foreground max-w-md">
+              No valid student or administrator role is assigned to this account.
+            </p>
+          </div>
+          <Link
+            href="/courses"
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+          >
+            Browse Courses
+          </Link>
+        </div>
+      );
+    }
+
     const getDestination = () => {
       if (roleType === "instructor") return { name: "Instructor Studio", href: "/instructor" };
       if (roleType === "content_manager") return { name: "Content Studio", href: "/content" };

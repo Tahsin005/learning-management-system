@@ -98,14 +98,20 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
     /** @type {Record<string, any>} */
     const filters = typeof customFilters === 'object' && customFilters !== null ? { ...customFilters } : {};
 
+    // filter out any records with null courses at the DB query level
+    const existingCourseFilters =
+      typeof filters.course === 'object' && filters.course !== null ? filters.course : {};
+    filters.course = {
+      ...existingCourseFilters,
+      id: { $notNull: true },
+    };
+
     // filter by student
     if (roleName === 'Student' || roleType === 'student') {
       filters.student = { id: user.id };
     } else if (roleName === 'Instructor' || roleType === 'instructor') {
-      const existingCourseFilters =
-        typeof filters.course === 'object' && filters.course !== null ? filters.course : {};
       filters.course = {
-        ...existingCourseFilters,
+        ...filters.course,
         owner: { id: user.id },
       };
     }
@@ -126,10 +132,8 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
       strapi.documents('api::enrollment.enrollment').count({ filters }),
     ]);
 
-    const activeEnrollments = enrollments.filter((e) => e.course !== null && e.course !== undefined);
-
     const sanitizedEnrollments = await Promise.all(
-      activeEnrollments.map(async (e) => {
+      enrollments.map(async (e) => {
         const studentId = e.student?.id || user.id;
         const lessons = e.course?.lessons || [];
         const quizzes = e.course?.quizzes || [];

@@ -11,7 +11,7 @@ export function useCourseDetails(courseDocId: string) {
   const { isAuthenticated } = useAuth();
 
   const { data: courseData, isLoading: isCourseLoading, isError, error } = useCourseQuery(courseDocId);
-  const { data: enrollmentsData } = useMyEnrollmentsQuery(1, 100, isAuthenticated);
+  const { data: enrollmentsData, isLoading: isEnrollmentsLoading } = useMyEnrollmentsQuery(1, 100, isAuthenticated);
   const { data: myQuizResultsData } = useMyQuizResultsQuery(1, 100, isAuthenticated);
   const enrollMutation = useEnrollMutation();
 
@@ -57,7 +57,7 @@ export function useCourseDetails(courseDocId: string) {
     quizResults: myQuizResultsData?.data || [],
 
     isAuthenticated,
-    isLoading: isCourseLoading,
+    isLoading: isCourseLoading || (isAuthenticated && isEnrollmentsLoading),
     isError,
     error,
 

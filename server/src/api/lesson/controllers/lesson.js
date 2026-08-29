@@ -56,13 +56,21 @@ module.exports = createCoreController('api::lesson.lesson', ({ strapi }) => ({
     const { id } = ctx.params;
     let lesson = await strapi.documents('api::lesson.lesson').findOne({
       documentId: id,
-      populate: ['course.owner'],
+      populate: {
+        course: {
+          populate: ['owner'],
+        },
+      },
     });
 
     if (!lesson) {
       lesson = await strapi.query('api::lesson.lesson').findOne({
         where: { id },
-        populate: ['course.owner'],
+        populate: {
+          course: {
+            populate: ['owner'],
+          },
+        },
       });
     }
 
@@ -91,13 +99,21 @@ module.exports = createCoreController('api::lesson.lesson', ({ strapi }) => ({
     const { id } = ctx.params;
     let lesson = await strapi.documents('api::lesson.lesson').findOne({
       documentId: id,
-      populate: ['course.owner'],
+      populate: {
+        course: {
+          populate: ['owner'],
+        },
+      },
     });
 
     if (!lesson) {
       lesson = await strapi.query('api::lesson.lesson').findOne({
         where: { id },
-        populate: ['course.owner'],
+        populate: {
+          course: {
+            populate: ['owner'],
+          },
+        },
       });
     }
 
@@ -114,17 +130,19 @@ module.exports = createCoreController('api::lesson.lesson', ({ strapi }) => ({
       return ctx.forbidden('You do not have permission to delete this lesson.');
     }
 
-    const lessonDocId = lesson.documentId || lesson.id;
+    const lessonDocId = String(lesson.documentId || lesson.id);
 
-    // Cascade delete associated lesson progress records
-    const progresses = await strapi.documents('api::lesson-progress.lesson-progress').findMany({
-      filters: { lesson: { documentId: lessonDocId } },
+    await strapi.db.transaction(async () => {
+      // Cascade delete associated lesson progress records
+      const progresses = await strapi.documents('api::lesson-progress.lesson-progress').findMany({
+        filters: { lesson: { documentId: lessonDocId } },
+      });
+      for (const p of progresses) {
+        await strapi.documents('api::lesson-progress.lesson-progress').delete({ documentId: p.documentId });
+      }
+
+      await strapi.documents('api::lesson.lesson').delete({ documentId: lessonDocId });
     });
-    for (const p of progresses) {
-      await strapi.documents('api::lesson-progress.lesson-progress').delete({ documentId: p.documentId });
-    }
-
-    await strapi.documents('api::lesson.lesson').delete({ documentId: lessonDocId });
 
     return ctx.send({
       message: 'Lesson and associated progress records deleted successfully.',
@@ -138,13 +156,21 @@ module.exports = createCoreController('api::lesson.lesson', ({ strapi }) => ({
 
     let lesson = await strapi.documents('api::lesson.lesson').findOne({
       documentId: id,
-      populate: ['course.owner'],
+      populate: {
+        course: {
+          populate: ['owner'],
+        },
+      },
     });
 
     if (!lesson) {
       lesson = await strapi.query('api::lesson.lesson').findOne({
         where: { id },
-        populate: ['course.owner'],
+        populate: {
+          course: {
+            populate: ['owner'],
+          },
+        },
       });
     }
 

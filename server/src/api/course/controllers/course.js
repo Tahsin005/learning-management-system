@@ -227,44 +227,46 @@ module.exports = createCoreController('api::course.course', ({ strapi }) => ({
       return ctx.forbidden('You do not have permission to delete this course. You can only manage courses you own.');
     }
 
-    const courseDocId = course.documentId || course.id;
+    const courseDocId = String(course.documentId || course.id);
 
-    // cascade delete all lesson-progresses and lessons
-    const lessons = course.lessons || [];
-    for (const lesson of lessons) {
-      const lDocId = lesson.documentId || lesson.id;
-      const progresses = await strapi.documents('api::lesson-progress.lesson-progress').findMany({
-        filters: { lesson: { documentId: lDocId } },
-      });
-      for (const p of progresses) {
-        await strapi.documents('api::lesson-progress.lesson-progress').delete({ documentId: p.documentId });
+    await strapi.db.transaction(async () => {
+      // cascade delete all lesson-progresses and lessons
+      const lessons = course.lessons || [];
+      for (const lesson of lessons) {
+        const lDocId = String(lesson.documentId || lesson.id);
+        const progresses = await strapi.documents('api::lesson-progress.lesson-progress').findMany({
+          filters: { lesson: { documentId: lDocId } },
+        });
+        for (const p of progresses) {
+          await strapi.documents('api::lesson-progress.lesson-progress').delete({ documentId: p.documentId });
+        }
+        await strapi.documents('api::lesson.lesson').delete({ documentId: lDocId });
       }
-      await strapi.documents('api::lesson.lesson').delete({ documentId: lDocId });
-    }
 
-    // cascade delete all quiz-results and quizzes
-    const quizzes = course.quizzes || [];
-    for (const quiz of quizzes) {
-      const qDocId = quiz.documentId || quiz.id;
-      const results = await strapi.documents('api::quiz-result.quiz-result').findMany({
-        filters: { quiz: { documentId: qDocId } },
-      });
-      for (const r of results) {
-        await strapi.documents('api::quiz-result.quiz-result').delete({ documentId: r.documentId });
+      // cascade delete all quiz-results and quizzes
+      const quizzes = course.quizzes || [];
+      for (const quiz of quizzes) {
+        const qDocId = String(quiz.documentId || quiz.id);
+        const results = await strapi.documents('api::quiz-result.quiz-result').findMany({
+          filters: { quiz: { documentId: qDocId } },
+        });
+        for (const r of results) {
+          await strapi.documents('api::quiz-result.quiz-result').delete({ documentId: r.documentId });
+        }
+        await strapi.documents('api::quiz.quiz').delete({ documentId: qDocId });
       }
-      await strapi.documents('api::quiz.quiz').delete({ documentId: qDocId });
-    }
 
-    // cascade delete all enrollments for this course
-    const enrollments = await strapi.documents('api::enrollment.enrollment').findMany({
-      filters: { course: { documentId: courseDocId } },
+      // cascade delete all enrollments for this course
+      const enrollments = await strapi.documents('api::enrollment.enrollment').findMany({
+        filters: { course: { documentId: courseDocId } },
+      });
+      for (const e of enrollments) {
+        await strapi.documents('api::enrollment.enrollment').delete({ documentId: e.documentId });
+      }
+
+      // delete the course document itself
+      await strapi.documents('api::course.course').delete({ documentId: courseDocId });
     });
-    for (const e of enrollments) {
-      await strapi.documents('api::enrollment.enrollment').delete({ documentId: e.documentId });
-    }
-
-    // delete the course document itself
-    await strapi.documents('api::course.course').delete({ documentId: courseDocId });
 
     return ctx.send({
       message: 'Course and all associated lessons, quizzes, and enrollments deleted successfully.',

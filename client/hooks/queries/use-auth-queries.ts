@@ -62,6 +62,7 @@ export function useLoginMutation() {
       return response;
     },
     onSuccess: async (data) => {
+      queryClient.clear();
       setAuth(data.jwt, data.user);
       let userObj = data.user;
       try {
@@ -77,9 +78,22 @@ export function useLoginMutation() {
       const urlParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
       const redirectParam = urlParams?.get("redirect");
 
-      if (redirectParam && !redirectParam.startsWith("/login")) {
-        router.push(redirectParam);
-        return;
+      if (
+        redirectParam &&
+        redirectParam.startsWith("/") &&
+        !redirectParam.startsWith("//") &&
+        !redirectParam.startsWith("/\\") &&
+        !redirectParam.startsWith("/login")
+      ) {
+        try {
+          const resolved = new URL(redirectParam, window.location.origin);
+          if (resolved.origin === window.location.origin) {
+            router.push(resolved.pathname + resolved.search + resolved.hash);
+            return;
+          }
+        } catch {
+          // invalid target, fall through to default role destination
+        }
       }
 
       const roleType = userObj.role?.type || "";

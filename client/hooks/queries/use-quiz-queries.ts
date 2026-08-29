@@ -22,7 +22,8 @@ export const QUIZ_QUERY_KEYS = {
   detail: (documentId: string) => ["quizzes", "detail", documentId] as const,
   byCourse: (courseDocId: string) => ["quizzes", "course", courseDocId] as const,
   myResults: (page: number, pageSize: number) => ["quiz-results", "my", page, pageSize] as const,
-  courseResults: (courseDocId?: string) => ["quiz-results", "course", courseDocId] as const,
+  courseResults: (courseDocId?: string, page = 1, pageSize = 100) =>
+    ["quiz-results", "course", courseDocId || "all", page, pageSize] as const,
   resultDetail: (documentId: string) => ["quiz-results", "detail", documentId] as const,
 };
 
@@ -53,10 +54,15 @@ export function useMyQuizResultsQuery(page = 1, pageSize = 25, enabled = true) {
   });
 }
 
-export function useCourseQuizResultsQuery(courseDocId?: string, enabled = true) {
+export function useCourseQuizResultsQuery(
+  courseDocId?: string,
+  page = 1,
+  pageSize = 100,
+  enabled = true
+) {
   return useQuery<StrapiListResponse<QuizResultRecord>, Error>({
-    queryKey: QUIZ_QUERY_KEYS.courseResults(courseDocId),
-    queryFn: () => quizzesApi.getCourseQuizResults(courseDocId),
+    queryKey: QUIZ_QUERY_KEYS.courseResults(courseDocId, page, pageSize),
+    queryFn: () => quizzesApi.getCourseQuizResults(courseDocId, page, pageSize),
     enabled,
     staleTime: 1000 * 5,
   });

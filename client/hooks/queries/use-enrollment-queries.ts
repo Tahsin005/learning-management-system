@@ -8,13 +8,14 @@ import { COURSE_QUERY_KEYS } from "./use-course-queries";
 
 export const ENROLLMENT_QUERY_KEYS = {
   all: ["enrollments"] as const,
-  myList: (page: number, pageSize: number) => ["enrollments", "my", page, pageSize] as const,
+  myList: (page: number, pageSize: number, courseDocId?: string) =>
+    ["enrollments", "my", page, pageSize, courseDocId || "all"] as const,
 };
 
-export function useMyEnrollmentsQuery(page = 1, pageSize = 25, enabled = true) {
+export function useMyEnrollmentsQuery(page = 1, pageSize = 25, enabled = true, courseDocId?: string) {
   return useQuery<StrapiListResponse<Enrollment>, Error>({
-    queryKey: ENROLLMENT_QUERY_KEYS.myList(page, pageSize),
-    queryFn: () => enrollmentsApi.getMyEnrollments(page, pageSize),
+    queryKey: ENROLLMENT_QUERY_KEYS.myList(page, pageSize, courseDocId),
+    queryFn: () => enrollmentsApi.getMyEnrollments(page, pageSize, courseDocId),
     enabled,
     staleTime: 1000 * 5,
   });

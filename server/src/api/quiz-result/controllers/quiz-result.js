@@ -238,7 +238,11 @@ module.exports = createCoreController('api::quiz-result.quiz-result', ({ strapi 
       documentId: id,
       populate: {
         quiz: {
-          populate: ['course.owner'],
+          populate: {
+            course: {
+              populate: ['owner'],
+            },
+          },
         },
         student: true,
       },
@@ -249,7 +253,11 @@ module.exports = createCoreController('api::quiz-result.quiz-result', ({ strapi 
         where: { id },
         populate: {
           quiz: {
-            populate: ['course.owner'],
+            populate: {
+              course: {
+                populate: ['owner'],
+              },
+            },
           },
           student: true,
         },

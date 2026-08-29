@@ -78,10 +78,10 @@ export function useAuth() {
     });
   };
 
-  const changePassword = (values: ChangePasswordFormValues, onSuccess?: () => void) => {
-    changePasswordMutation.mutate(values, {
-      onSuccess: () => onSuccess?.(),
-    });
+  const changePassword = async (values: ChangePasswordFormValues, onSuccess?: () => void) => {
+    const res = await changePasswordMutation.mutateAsync(values);
+    onSuccess?.();
+    return res;
   };
 
   const forgotPassword = (values: ForgotPasswordFormValues, onSuccess?: () => void) => {
