@@ -72,6 +72,13 @@ export function useContentManagerOverview() {
     isAuthenticated
   );
 
+  // Overview query to compute platform-wide course and curriculum stats
+  const { data: allCoursesSummaryData } = useInstructorCoursesQuery(
+    undefined,
+    { page: 1, pageSize: 100 },
+    isAuthenticated
+  );
+
   // Platform-wide enrollments
   const { data: enrollmentsData, isLoading: isEnrollmentsLoading } = useMyEnrollmentsQuery(
     1,
@@ -108,6 +115,10 @@ export function useContentManagerOverview() {
   const totalBlogsCount = allBlogsSummaryData?.meta?.pagination?.total ?? blogsPagination.total;
   const publishedBlogsCount = allBlogsList.filter((b) => !!b.publishedAt).length;
   const draftBlogsCount = allBlogsList.filter((b) => !b.publishedAt).length;
+
+  const allCoursesList = allCoursesSummaryData?.data || [];
+  const totalLessonsInPlatform = allCoursesList.reduce((acc, c) => acc + (c.lessons?.length || 0), 0);
+  const totalQuizzesInPlatform = allCoursesList.reduce((acc, c) => acc + (c.quizzes?.length || 0), 0);
 
   const enrollments = enrollmentsData?.data || [];
   const completedEnrollmentsCount = enrollments.filter((e) => e.isCompleted).length;
@@ -257,6 +268,8 @@ export function useContentManagerOverview() {
     draftBlogsCount,
     totalEnrollments: enrollments.length,
     completedEnrollments: completedEnrollmentsCount,
+    totalLessonsInPlatform,
+    totalQuizzesInPlatform,
     enrollments,
     isEnrollmentsLoading,
 

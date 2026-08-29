@@ -79,6 +79,16 @@ export function MarkdownEditor({
     }, 0);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+      e.preventDefault();
+      insertFormatting("**", "**", "bold text");
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "i") {
+      e.preventDefault();
+      insertFormatting("*", "*", "italic text");
+    }
+  };
+
   const wordCount = value.trim() ? value.trim().split(/\s+/).length : 0;
   const charCount = value.length;
   const readingTime = Math.max(1, Math.ceil(wordCount / 200));
@@ -310,6 +320,7 @@ export function MarkdownEditor({
               id={id}
               value={value}
               onChange={(e) => onChange(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder={placeholder}
               disabled={disabled}
               className={cn(

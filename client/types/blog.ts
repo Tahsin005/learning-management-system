@@ -4,7 +4,7 @@ export interface BlogAuthor {
   id: number;
   documentId?: string;
   username: string;
-  email: string;
+  email?: string;
 }
 
 export interface BlogPost {

@@ -2,7 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, BookOpen, Sparkles, Filter, ChevronLeft, ChevronRight, Newspaper } from "lucide-react";
+import {
+  Search,
+  BookOpen,
+  Sparkles,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  Newspaper,
+  AlertCircle,
+  RotateCw,
+} from "lucide-react";
 import { BlogCard } from "@/components/blog/blog-card";
 import { useBlogPostsQuery } from "@/hooks/queries/use-blog-queries";
 import { useAuth } from "@/hooks/use-auth";
@@ -18,7 +28,7 @@ export default function BlogCatalogPage() {
   const [activeSearch, setActiveSearch] = useState("");
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useBlogPostsQuery({
+  const { data, isLoading, error, refetch } = useBlogPostsQuery({
     page,
     pageSize: 9,
     search: activeSearch,
@@ -105,6 +115,25 @@ export default function BlogCatalogPage() {
                 className="h-80 rounded-2xl border border-border/40 bg-card/40 animate-pulse"
               />
             ))}
+          </div>
+        ) : error ? (
+          <div className="rounded-3xl border border-destructive/30 bg-destructive/5 p-12 text-center max-w-lg mx-auto my-12">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-4">
+              <AlertCircle className="h-7 w-7" />
+            </div>
+            <h3 className="text-lg font-bold text-foreground">Failed to load articles</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {error.message || "An unexpected error occurred while fetching articles."}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              className="mt-4 gap-1.5"
+            >
+              <RotateCw className="h-3.5 w-3.5" />
+              Try Again
+            </Button>
           </div>
         ) : posts.length === 0 ? (
           <div className="rounded-3xl border border-border/80 bg-card/40 p-12 text-center max-w-lg mx-auto my-12">

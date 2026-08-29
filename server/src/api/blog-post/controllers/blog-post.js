@@ -189,7 +189,6 @@ module.exports = createCoreController('api::blog-post.blog-post', ({ strapi }) =
             id: author.id,
             documentId: author.documentId,
             username: author.username,
-            email: author.email,
           };
         }
       });
@@ -247,7 +246,6 @@ module.exports = createCoreController('api::blog-post.blog-post', ({ strapi }) =
           id: postWithAuthor.author.id,
           documentId: postWithAuthor.author.documentId,
           username: postWithAuthor.author.username,
-          email: postWithAuthor.author.email,
         };
       }
     }

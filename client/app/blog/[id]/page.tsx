@@ -34,10 +34,16 @@ export default function SingleBlogPostPage({ params }: BlogPostPageProps) {
       })
     : "";
 
-  const handleCopyLink = () => {
-    if (typeof window !== "undefined") {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success("Article link copied to clipboard!");
+  const handleCopyLink = async () => {
+    if (typeof window !== "undefined" && navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success("Article link copied to clipboard!");
+      } catch {
+        toast.error("Failed to copy link to clipboard.");
+      }
+    } else {
+      toast.error("Clipboard operations are not supported in this browser.");
     }
   };
 

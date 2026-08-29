@@ -62,6 +62,8 @@ export default function ContentStudioPage() {
     draftBlogsCount,
     totalEnrollments,
     completedEnrollments,
+    totalLessonsInPlatform,
+    totalQuizzesInPlatform,
     enrollments,
     isEnrollmentsLoading,
 
@@ -92,8 +94,6 @@ export default function ContentStudioPage() {
   );
 
   const quizResults = quizResultsData?.data || [];
-  const totalLessonsInPlatform = courses.reduce((acc, c) => acc + (c.lessons?.length || 0), 0);
-  const totalQuizzesInPlatform = courses.reduce((acc, c) => acc + (c.quizzes?.length || 0), 0);
 
   const confirmDeleteCourse = () => {
     if (!deletingCourse) return;
