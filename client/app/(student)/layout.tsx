@@ -17,7 +17,7 @@ export default function StudentLayout({
   const { user, roleType, isAuthenticated, isInitialized, isLoading } = useAuth();
 
   useEffect(() => {
-    if (isInitialized && isAuthenticated && roleType && roleType !== "student") {
+    if (isInitialized && isAuthenticated && roleType !== "student") {
       if (roleType === "admin") {
         router.replace("/admin");
       } else if (roleType === "instructor") {

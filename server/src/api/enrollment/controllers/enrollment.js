@@ -106,10 +106,22 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
       id: { $notNull: true },
     };
 
+    /** @type {Record<string, any>} */
+    const customFiltersObj = typeof customFilters === 'object' && customFilters !== null ? customFilters : {};
+
+    const hasCourseFilter = Boolean(
+      existingCourseFilters.documentId ||
+      existingCourseFilters.id ||
+      existingCourseFilters['$eq'] ||
+      existingCourseFilters['$in'] ||
+      typeof customFiltersObj.course === 'string' ||
+      typeof customFiltersObj.course === 'number'
+    );
+
     const isAllRequested = ctx.query?.all === 'true' || filters.all === true || filters.all === 'true';
     delete filters.all;
 
-    // filter by student
+    // filter by student / role
     if (roleName === 'Student' || roleType === 'student') {
       filters.student = { id: user.id };
     } else if (roleName === 'Instructor' || roleType === 'instructor') {
@@ -117,7 +129,7 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
         ...filters.course,
         owner: { id: user.id },
       };
-    } else if ((roleName === 'Admin' || roleType === 'admin') && !isAllRequested) {
+    } else if ((roleName === 'Admin' || roleType === 'admin' || roleName === 'Content Manager' || roleType === 'content_manager') && !isAllRequested && !hasCourseFilter) {
       filters.student = { id: user.id };
     }
 
@@ -262,8 +274,15 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
 
     const roleName = user.role?.name || '';
     const roleType = user.role?.type || '';
+    const isAllRequested = ctx.query?.all === 'true' || ctx.query?.all === true;
 
     if ((roleName === 'Student' || roleType === 'student') && enrollment.student?.id !== user.id) {
+      return ctx.forbidden('Access denied.');
+    } else if (
+      (roleName === 'Admin' || roleType === 'admin') &&
+      !isAllRequested &&
+      enrollment.student?.id !== user.id
+    ) {
       return ctx.forbidden('Access denied.');
     }
 

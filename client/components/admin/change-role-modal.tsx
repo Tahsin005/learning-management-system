@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -32,38 +32,38 @@ const ROLES_INFO: Array<{
 }> = [
   {
     type: "admin",
-    title: "Admin",
-    badgeClass: "bg-red-500/10 text-red-500 border-red-500/30",
-    description: "Full control of the platform. Manages users and assigns/changes their roles. Can do everything.",
+    title: "Administrator",
+    badgeClass: "bg-red-500/10 text-red-400 border-red-500/30",
+    description: "Full platform control. Manages users, reassigns roles, and controls courses & blogs.",
     permissions: [
-      "Manage all users & change roles",
-      "Full CRUD on all courses, lessons, quizzes",
-      "Full CRUD on all blog posts",
-      "Access Admin Panel & Platform Analytics",
+      "Manage all users and assign roles",
+      "Full course creation & editorial oversight",
+      "Full blog management (drafts & published)",
+      "View platform-wide KPIs and analytics",
     ],
   },
   {
     type: "content_manager",
     title: "Content Manager",
     badgeClass: "bg-purple-500/10 text-purple-400 border-purple-500/30",
-    description: "Creates and manages courses, lessons, and blog posts across the platform. Does not manage users.",
+    description: "Manages educational curriculum and blog publications platform-wide.",
     permissions: [
-      "Create, edit, delete any course & lesson",
-      "Create and edit quizzes",
-      "Write, edit, publish, delete all blog posts",
-      "Cannot manage users or assign roles",
+      "Create, edit, and delete any course",
+      "Manage lessons & quizzes across all courses",
+      "Write, edit, and publish blog articles",
+      "No user management access",
     ],
   },
   {
     type: "instructor",
     title: "Instructor",
-    badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-    description: "Manages the lessons and quizzes of their own courses, and can see the progress of students enrolled in them.",
+    badgeClass: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+    description: "Creates and manages own courses, lessons, quizzes, and student progress.",
     permissions: [
-      "Create & manage own courses",
-      "Add lessons & quizzes to own courses",
-      "View enrolled students' progress in own courses",
-      "Cannot write blogs or manage users",
+      "Create & edit own courses only",
+      "Add lessons and build auto-graded quizzes",
+      "Track enrolled students & gradebook",
+      "Read published blog posts",
     ],
   },
   {
@@ -89,6 +89,10 @@ export function ChangeRoleModal({
   const currentRoleType = (user?.role?.type || "student") as UserRoleType;
   const [selectedRole, setSelectedRole] = useState<UserRoleType>(currentRoleType);
   const updateRoleMutation = useUpdateUserRoleMutation();
+
+  useEffect(() => {
+    setSelectedRole(currentRoleType);
+  }, [user?.id, currentRoleType, isOpen]);
 
   if (!user) return null;
 
@@ -148,11 +152,13 @@ export function ChangeRoleModal({
               const isCurrent = currentRoleType === r.type;
 
               return (
-                <div
+                <button
+                  type="button"
                   key={r.type}
-                  onClick={() => !isSelf && setSelectedRole(r.type)}
+                  disabled={isSelf}
+                  onClick={() => setSelectedRole(r.type)}
                   className={cn(
-                    "p-3.5 rounded-xl border transition-all relative flex flex-col justify-between space-y-2",
+                    "p-3.5 rounded-xl border text-left transition-all relative flex flex-col justify-between space-y-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                     isSelf ? "opacity-60 cursor-not-allowed" : "cursor-pointer",
                     isSelected
                       ? "border-primary bg-primary/5 ring-1 ring-primary shadow-sm"
@@ -177,7 +183,7 @@ export function ChangeRoleModal({
                   <p className="text-[11px] text-muted-foreground line-clamp-2">
                     {r.description}
                   </p>
-                </div>
+                </button>
               );
             })}
           </div>

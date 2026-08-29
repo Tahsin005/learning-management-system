@@ -43,13 +43,13 @@ export default function AdminDashboardPage() {
     data: coursesData,
     isLoading: isCoursesLoading,
     refetch: refetchCourses,
-  } = useCoursesQuery({ page: 1, pageSize: 100 });
+  } = useCoursesQuery({ page: 1, pageSize: 1000 });
 
   const {
     data: blogsData,
     isLoading: isBlogsLoading,
     refetch: refetchBlogs,
-  } = useBlogPostsQuery({ page: 1, pageSize: 100 });
+  } = useBlogPostsQuery({ page: 1, pageSize: 1000 });
 
   const handleRefreshAll = () => {
     refetchStats();
