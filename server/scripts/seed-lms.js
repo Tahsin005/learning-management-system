@@ -1036,7 +1036,124 @@ COMMIT;
       },
     });
 
-    console.log('LMS Database successfully seeded with 6 rich courses, lessons, and quizzes!');
+    console.log('Seeding editorial blog posts (published and draft articles)...');
+    
+    await strapi.documents('api::blog-post.blog-post').create({
+      data: {
+        title: 'The Future of Full-Stack Architecture: React 19 & Next.js 16',
+        body: `# The Future of Full-Stack Architecture: React 19 & Next.js 16
+
+Modern web development has undergone a paradigm shift with the convergence of **React 19** and the **Next.js 16 App Router**. Gone are the days when frontend and backend were isolated silos communicating solely over cumbersome REST endpoints.
+
+---
+
+### Key Architectural Shifts
+
+1. **React Server Components (RSC)**: Compute happens where the data lives. By rendering on the server by default, client bundle sizes drop dramatically while time-to-interactive accelerates.
+2. **Server Actions as First-Class RPC**: Mutating database entities directly from UI form components without writing boilerplate Express or NestJS controllers simplifies developer ergonomics.
+3. **Streaming SSR with Suspense**: Instead of blocking entire page renders on slow queries, components stream to the client incrementally as data resolves.
+
+\`\`\`typescript
+// Example: Async Server Component streaming data directly
+export default async function CourseCatalogPage() {
+  const courses = await db.course.findMany({ include: { lessons: true } });
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {courses.map((c) => (
+        <CourseCard key={c.id} course={c} />
+      ))}
+    </div>
+  );
+}
+\`\`\`
+
+### Production Takeaways
+When architecting enterprise-grade applications, combine RSC with client-side optimistic UI updates for instantaneous user perception and flawless data consistency.`,
+        coverImageUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&auto=format&fit=crop&q=80',
+        author: cmUser.id,
+      },
+      status: 'published',
+    });
+
+    await strapi.documents('api::blog-post.blog-post').create({
+      data: {
+        title: 'Demystifying Role-Based Access Control in Headless CMS Systems',
+        body: `# Demystifying Role-Based Access Control in Headless CMS Systems
+
+Building secure, scalable multi-tenant platforms requires strict separation of concerns across user tiers: **Administrators**, **Content Managers**, **Instructors**, and **Students**.
+
+---
+
+### The 3 Golden Rules of RBAC
+
+1. **Never Trust the Client**: Hiding a button or disabling an input on the frontend provides zero security. Every mutation must be authorized at the controller or middleware policy layer.
+2. **Context-Aware Ownership Checks**: An instructor can edit courses, but only courses where \`course.owner.id === user.id\`. Content managers and admins bypass ownership constraints to maintain the platform-wide library.
+3. **Draft vs. Published Isolation**: Unreleased content should never leak to public queries. Enforce publication status filters at the database engine level.
+
+\`\`\`javascript
+// Backend policy enforcing owner isolation
+if (role === 'Instructor' && course.owner.id !== user.id) {
+  throw new ForbiddenError('You can only modify courses you own.');
+}
+\`\`\`
+
+By codifying these policies directly into the CMS lifecycle, platform integrity remains uncompromised.`,
+        coverImageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&auto=format&fit=crop&q=80',
+        author: cmUser.id,
+      },
+      status: 'published',
+    });
+
+    await strapi.documents('api::blog-post.blog-post').create({
+      data: {
+        title: 'Mastering Database Query Optimization & Indexing Strategies',
+        body: `# Mastering Database Query Optimization & Indexing Strategies
+
+As application data scales from thousands to millions of rows, database performance becomes the primary bottleneck for user experience.
+
+---
+
+### Effective Indexing Strategies
+
+- **B-Tree Indexes**: Default for equality and range comparisons on primary keys and foreign keys.
+- **Composite Indexes**: When querying multiple columns simultaneously (e.g., \`WHERE student_id = ? AND course_id = ?\`), compound indexes eliminate multi-table scans.
+- **Partial Indexes**: Index only active or published records to minimize storage overhead and memory cache footprint.
+
+\`\`\`sql
+-- Creating composite index on enrollment progress
+CREATE INDEX idx_student_lesson_progress ON lesson_progresses (student_id, lesson_id) WHERE completed = true;
+\`\`\`
+
+Regularly profile your queries using \`EXPLAIN ANALYZE\` to ensure query plans leverage index scans rather than expensive sequential table scans.`,
+        coverImageUrl: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=1200&auto=format&fit=crop&q=80',
+        author: adminUser.id,
+      },
+      status: 'published',
+    });
+
+    await strapi.documents('api::blog-post.blog-post').create({
+      data: {
+        title: '[DRAFT] Upcoming LMS Platform Features: Live Peer Code Review & AI Tutoring',
+        body: `# [DRAFT] Upcoming LMS Platform Features: Live Peer Code Review & AI Tutoring
+
+> *Notice: This is an internal product draft undergoing editorial review by the Content Management team.*
+
+---
+
+### What's Coming in Q4
+
+1. **Interactive Peer Code Review**: Students can submit GitHub repository URLs for algorithmic assignments and receive structured peer feedback.
+2. **Context-Aware AI Tutoring**: Instant code debugging assistance trained directly on course lecture slides and video transcripts.
+3. **Gamified Learning Streaks**: Weekly cohort leaderboards and milestone badges to boost completion rates.
+
+Stay tuned for our upcoming public beta announcement!`,
+        coverImageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&auto=format&fit=crop&q=80',
+        author: cmUser.id,
+      },
+      status: 'draft',
+    });
+
+    console.log('LMS Database successfully seeded with 6 rich courses, lessons, quizzes, and editorial blogs!');
   } catch (err) {
     console.error('Error during LMS database seeding:', err);
     throw err;

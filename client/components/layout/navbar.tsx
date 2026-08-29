@@ -11,6 +11,7 @@ import {
   Briefcase,
   ShieldCheck,
   FileEdit,
+  Newspaper,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -154,6 +155,14 @@ export function Navbar() {
                 <BookOpen className="h-4 w-4 text-muted-foreground" />
                 <span>Browse Courses</span>
               </DropdownMenuItem>
+
+              <DropdownMenuItem
+                onClick={() => router.push("/blog")}
+                className="cursor-pointer gap-2"
+              >
+                <Newspaper className="h-4 w-4 text-muted-foreground" />
+                <span>Articles & Blog</span>
+              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -204,6 +213,10 @@ export function Navbar() {
           <nav className="hidden sm:flex items-center gap-6 text-sm font-medium text-muted-foreground">
             <Link href="/courses" className="hover:text-foreground transition-colors">
               Courses
+            </Link>
+
+            <Link href="/blog" className="hover:text-foreground transition-colors">
+              Blog
             </Link>
 
             {isAuthenticated && (roleType === "student" || roleType === "admin") && (

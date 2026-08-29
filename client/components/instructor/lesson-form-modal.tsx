@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, PlusCircle, Save } from "lucide-react";
+import { Loader2, PlusCircle, Save, BookOpen } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MarkdownEditor } from "@/components/ui/markdown-editor";
 import { lessonSchema, type LessonFormValues } from "@/lib/validations/course";
 import type { Lesson } from "@/types/course";
 
@@ -39,6 +40,8 @@ export function LessonFormModal({
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<LessonFormValues>({
     resolver: zodResolver(lessonSchema),
@@ -48,6 +51,8 @@ export function LessonFormModal({
       videoUrl: "",
     },
   });
+
+  const lessonContent = watch("content") || "";
 
   useEffect(() => {
     if (lesson) {
@@ -70,70 +75,82 @@ export function LessonFormModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-bold">
-            {isEditing ? "Edit Lesson Module" : "Add Lesson Module"}
-          </DialogTitle>
-          <DialogDescription className="text-xs text-muted-foreground">
-            {isEditing
-              ? "Update lesson notes, title, and video stream link"
-              : "Create a new sequential lesson under this course"}
-          </DialogDescription>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && !isLoading && onClose()}>
+      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0 overflow-hidden border-border/80 bg-card">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/60">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <BookOpen className="h-5 w-5" />
+            </div>
+            <div>
+              <DialogTitle className="text-lg font-bold text-foreground">
+                {isEditing ? "Edit Lesson Module" : "Add Lesson Module"}
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                {isEditing
+                  ? "Update lesson curriculum notes, code walkthroughs, and video stream link."
+                  : "Create a new sequential lesson module under this course."}
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 pt-2">
+        <form
+          onSubmit={handleSubmit(handleFormSubmit)}
+          className="flex flex-1 flex-col overflow-y-auto px-6 py-4 space-y-4"
+        >
           <div className="space-y-1.5">
-            <Label htmlFor="lessonTitle" className="text-xs font-semibold">
-              Lesson Title
+            <Label htmlFor="lessonTitle" className="text-xs font-semibold text-foreground">
+              Lesson Title <span className="text-destructive">*</span>
             </Label>
             <Input
               id="lessonTitle"
-              placeholder="e.g. 1. Introduction to Next.js App Router"
+              placeholder="e.g. 1. Introduction to Next.js App Router & Server Components"
               disabled={isLoading}
-              className="bg-muted/20"
+              className="text-sm font-medium"
               {...register("title")}
             />
             {errors.title && (
-              <p className="text-xs text-destructive">{errors.title.message}</p>
+              <p className="text-xs text-destructive font-medium">{errors.title.message}</p>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="videoUrl" className="text-xs font-semibold">
-              Video Stream URL (YouTube or Direct MP4)
+            <Label htmlFor="videoUrl" className="text-xs font-semibold text-foreground flex items-center justify-between">
+              <span>Video Stream URL (Optional)</span>
+              <span className="text-[11px] font-normal text-muted-foreground">YouTube or direct MP4 stream URL</span>
             </Label>
             <Input
               id="videoUrl"
               placeholder="https://www.youtube.com/watch?v=..."
               disabled={isLoading}
-              className="bg-muted/20 text-xs"
+              className="text-xs"
               {...register("videoUrl")}
             />
             {errors.videoUrl && (
-              <p className="text-xs text-destructive">{errors.videoUrl.message}</p>
+              <p className="text-xs text-destructive font-medium">{errors.videoUrl.message}</p>
             )}
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="lessonContent" className="text-xs font-semibold">
-              Lesson Content & Code Notes (Markdown supported)
+          <div className="space-y-1.5 flex-1 flex flex-col min-h-[280px]">
+            <Label htmlFor="lessonContent" className="text-xs font-semibold text-foreground">
+              Lesson Content & Code Notes (Markdown Supported)
             </Label>
-            <textarea
+            <MarkdownEditor
               id="lessonContent"
-              rows={6}
-              placeholder="Comprehensive markdown notes, code snippets, and instructions..."
+              value={lessonContent}
+              onChange={(val) => setValue("content", val, { shouldValidate: true })}
+              placeholder="# Overview&#10;&#10;Explain the concepts, architectures, and code snippets covered in this lesson..."
+              minHeight="min-h-[220px]"
               disabled={isLoading}
-              className="w-full rounded-md border border-input bg-muted/20 px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              {...register("content")}
+              error={errors.content?.message}
             />
             {errors.content && (
-              <p className="text-xs text-destructive">{errors.content.message}</p>
+              <p className="text-xs text-destructive font-medium">{errors.content.message}</p>
             )}
           </div>
 
-          <DialogFooter className="pt-3">
+          <DialogFooter className="pt-3 border-t border-border/60 gap-2 sm:gap-0">
             <Button
               type="button"
               variant="outline"
