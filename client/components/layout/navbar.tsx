@@ -108,7 +108,7 @@ export function Navbar() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              {(isStudent || isAdmin) && (
+              {isStudent && (
                 <DropdownMenuItem
                   onClick={() => router.push("/dashboard")}
                   className="cursor-pointer gap-2"
@@ -118,7 +118,7 @@ export function Navbar() {
                 </DropdownMenuItem>
               )}
 
-              {(isInstructor || isAdmin) && (
+              {isInstructor && (
                 <DropdownMenuItem
                   onClick={() => router.push("/instructor")}
                   className="cursor-pointer gap-2"
@@ -128,7 +128,7 @@ export function Navbar() {
                 </DropdownMenuItem>
               )}
 
-              {(isContentManager || isAdmin) && (
+              {isContentManager && (
                 <DropdownMenuItem
                   onClick={() => router.push("/content")}
                   className="cursor-pointer gap-2"
@@ -219,26 +219,26 @@ export function Navbar() {
               Blog
             </Link>
 
-            {isAuthenticated && (roleType === "student" || roleType === "admin") && (
+            {isAuthenticated && roleType === "student" && (
               <Link href="/dashboard" className="hover:text-foreground transition-colors">
                 Dashboard
               </Link>
             )}
 
-            {isAuthenticated && (roleType === "instructor" || roleType === "admin") && (
+            {isAuthenticated && (roleType === "instructor") && (
               <Link href="/instructor" className="hover:text-foreground transition-colors text-emerald-400">
                 Instructor Studio
               </Link>
             )}
 
-            {isAuthenticated && (roleType === "content_manager" || roleType === "admin") && (
+            {isAuthenticated && (roleType === "content_manager") && (
               <Link href="/content" className="hover:text-foreground transition-colors text-indigo-400">
                 Content Studio
               </Link>
             )}
 
             {isAuthenticated && roleType === "admin" && (
-              <Link href="/admin" className="hover:text-foreground transition-colors text-amber-400">
+              <Link href="/admin" className="hover:text-foreground transition-colors text-amber-400 font-semibold flex items-center gap-1">
                 Admin Panel
               </Link>
             )}

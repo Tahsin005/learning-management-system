@@ -13,7 +13,7 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
     const roleType = user.role?.type || '';
 
     // only students can enroll per the permission matrix
-    if (roleName !== 'Student' && roleType !== 'student' && roleName !== 'Admin' && roleType !== 'admin') {
+    if (roleName !== 'Student' && roleType !== 'student') {
       return ctx.forbidden('Only students can enroll in courses.');
     }
 
@@ -106,6 +106,9 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
       id: { $notNull: true },
     };
 
+    const isAllRequested = ctx.query?.all === 'true' || filters.all === true || filters.all === 'true';
+    delete filters.all;
+
     // filter by student
     if (roleName === 'Student' || roleType === 'student') {
       filters.student = { id: user.id };
@@ -114,6 +117,8 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
         ...filters.course,
         owner: { id: user.id },
       };
+    } else if ((roleName === 'Admin' || roleType === 'admin') && !isAllRequested) {
+      filters.student = { id: user.id };
     }
 
     const [enrollments, total] = await Promise.all([
