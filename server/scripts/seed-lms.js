@@ -2,6 +2,429 @@
 
 const { createStrapi, compileStrapi } = require('@strapi/strapi');
 
+const courseSeeds = [
+  {
+    course: {
+      title: 'React 19 Deep Dive: Hooks & Modern Patterns',
+      description: '# React 19 Deep Dive\n\nMaster the new hooks and patterns introduced in React 19.\n\n### Highlights:\n- New Hooks (use, useFormStatus, useOptimistic)\n- Rules of Hooks\n- Building real-world components',
+      instructorEmail: 'tahsin.ins@gmail.com',
+    },
+    lessons: [
+      {
+        title: '1. React 19 Full Course Overview',
+        content: "# React 19 Full Course\n\nA complete walkthrough of React 19 fundamentals and what's changed since React 18.\n\n### Key Takeaways:\n- New JSX transform improvements\n- Actions and form handling\n- Building a real app end-to-end",
+        videoUrl: 'https://www.youtube.com/watch?v=dCLhUialKPQ',
+        order: 1,
+      },
+      {
+        title: '2. Rules of Hooks',
+        content: '# Rules of Hooks\n\nUnderstand the constraints that make hooks predictable and safe to use.\n\n### Best Practices:\n- Only call hooks at the top level\n- Only call hooks from React functions\n- Custom hook composition',
+        videoUrl: 'https://www.youtube.com/watch?v=YdJPtx-ovWM',
+        order: 2,
+      },
+    ],
+    quiz: {
+      title: 'Module 1: React 19 Basics Quiz',
+      questions: [
+        {
+          questionText: 'Where can hooks be called according to the Rules of Hooks?',
+          options: [
+            'Anywhere in a component, including inside loops',
+            'Only at the top level of a React function',
+            'Only inside class components',
+            'Only inside useEffect',
+          ],
+          correctAnswerIndex: 1,
+        },
+        {
+          questionText: "What is a primary goal of React 19's new Actions API?",
+          options: [
+            'Replacing CSS with JS-in-CSS',
+            'Simplifying form submission and pending/error state handling',
+            'Removing the virtual DOM',
+            'Deprecating JSX',
+          ],
+          correctAnswerIndex: 1,
+        },
+      ],
+    },
+  },
+  {
+    course: {
+      title: 'Next.js 16: Full-Stack Fundamentals',
+      description: '# Next.js 16 Full-Stack Fundamentals\n\nLearn to build full-stack apps with the App Router, Server Components, and Server Actions.\n\n### Highlights:\n- App Router & file-based routing\n- Data fetching strategies\n- Deployment on Vercel',
+      instructorEmail: 'tahsin.ins@gmail.com',
+    },
+    lessons: [
+      {
+        title: '1. Next.js Crash Course',
+        content: '# Next.js Crash Course\n\nAn introduction to Next.js fundamentals: SSR, SSG, routing, data fetching, and API routes.\n\n### Key Takeaways:\n- File-based routing\n- getServerSideProps vs getStaticProps concepts\n- Building and deploying a simple app',
+        videoUrl: 'https://www.youtube.com/watch?v=mTz0GXj8NN0',
+        order: 1,
+      },
+      {
+        title: '2. Building & Deploying a Production App',
+        content: '# Build and Deploy a Production-Ready App\n\nGo further with a full project build covering routing, data fetching, and deployment.\n\n### Best Practices:\n- Structuring a real project\n- Environment variables\n- Shipping to production',
+        videoUrl: 'https://www.youtube.com/watch?v=Zq5fmkH0T78',
+        order: 2,
+      },
+    ],
+    quiz: {
+      title: 'Module 1: Next.js Fundamentals Quiz',
+      questions: [
+        {
+          questionText: 'What does Next.js use for routing by default in the App Router?',
+          options: [
+            'A central routes.config.js file',
+            'File-based routing using the app/ directory',
+            'XML route manifests',
+            'Manual route registration in server.js',
+          ],
+          correctAnswerIndex: 1,
+        },
+        {
+          questionText: 'Which platform is commonly used to deploy Next.js apps in these tutorials?',
+          options: [
+            'Heroku',
+            'Vercel',
+            'Netlify Functions only',
+            'AWS Lambda manually',
+          ],
+          correctAnswerIndex: 1,
+        },
+      ],
+    },
+  },
+  {
+    course: {
+      title: 'Node.js & Express: Building REST APIs',
+      description: '# Node.js & Express\n\nLearn backend fundamentals and build REST APIs from scratch.\n\n### Highlights:\n- Node core modules\n- Express routing & middleware\n- Building a working API',
+      instructorEmail: 'tahsin.ins@gmail.com',
+    },
+    lessons: [
+      {
+        title: '1. Node.js Crash Course',
+        content: '# Node.js Crash Course\n\nCovers core Node.js modules, the HTTP module, NPM, and building a simple server.\n\n### Key Takeaways:\n- CommonJS vs ES modules\n- File System and Path modules\n- Building a basic HTTP server',
+        videoUrl: 'https://www.youtube.com/watch?v=fBNz5xF-Kx4',
+        order: 1,
+      },
+      {
+        title: '2. Express Crash Course',
+        content: '# Express Crash Course\n\nLearn the most popular Node.js web framework and build a working API.\n\n### Best Practices:\n- Routing and middleware\n- Environment variables\n- Error handling',
+        videoUrl: 'https://www.youtube.com/watch?v=CnH3kAXSrmU',
+        order: 2,
+      },
+    ],
+    quiz: {
+      title: 'Module 1: Node & Express Quiz',
+      questions: [
+        {
+          questionText: 'Which built-in Node.js module is used to create an HTTP server without Express?',
+          options: ['fs', 'path', 'http', 'os'],
+          correctAnswerIndex: 2,
+        },
+        {
+          questionText: 'What is Express middleware primarily used for?',
+          options: [
+            'Compiling TypeScript',
+            'Processing requests/responses in a pipeline before reaching route handlers',
+            'Styling HTML templates',
+            'Managing database migrations',
+          ],
+          correctAnswerIndex: 1,
+        },
+      ],
+    },
+  },
+  {
+    course: {
+      title: 'Docker for Developers: Containerize Your Applications',
+      description: '# Docker for Developers\n\nLearn to containerize applications for consistent development and deployment.\n\n### Highlights:\n- Images vs containers\n- Dockerfiles & docker-compose\n- Practical containerization workflows',
+      instructorEmail: 'tahsin.ins@gmail.com',
+    },
+    lessons: [
+      {
+        title: '1. Docker Crash Course: All About Docker',
+        content: '# Docker Crash Course\n\nAn introduction to Docker fundamentals: images, containers, and the Docker CLI.\n\n### Key Takeaways:\n- What problem Docker solves\n- Images vs containers\n- Basic Docker commands',
+        videoUrl: 'https://www.youtube.com/watch?v=ay7Rdj7MQQA',
+        order: 1,
+      },
+      {
+        title: '2. Docker Crash Course for Beginners',
+        content: '# Docker Crash Course for Beginners\n\nA hands-on walkthrough of Dockerfiles, images, containers, and Docker Hub.\n\n### Best Practices:\n- Writing efficient Dockerfiles\n- Managing volumes\n- Using docker-compose',
+        videoUrl: 'https://www.youtube.com/watch?v=-eAkQsASIoc',
+        order: 2,
+      },
+    ],
+    quiz: {
+      title: 'Module 1: Docker Basics Quiz',
+      questions: [
+        {
+          questionText: 'What is the difference between a Docker image and a Docker container?',
+          options: [
+            'There is no difference, the terms are interchangeable',
+            'An image is a running instance of a container',
+            'A container is a running instance of an image',
+            'Images only work on Linux, containers only on Windows',
+          ],
+          correctAnswerIndex: 2,
+        },
+        {
+          questionText: 'Which file defines the steps to build a Docker image?',
+          options: ['docker-compose.yml', 'Dockerfile', 'package.json', 'container.config'],
+          correctAnswerIndex: 1,
+        },
+      ],
+    },
+  },
+  {
+    course: {
+      title: 'PostgreSQL Database Mastery',
+      description: '# PostgreSQL Database Mastery\n\nLearn relational database design and SQL using PostgreSQL.\n\n### Highlights:\n- Database & table design\n- Writing SQL queries\n- Constraints, joins, and keys',
+      instructorEmail: 'tahsin.ins1@gmail.com',
+    },
+    lessons: [
+      {
+        title: '1. PostgreSQL Crash Course',
+        content: '# PostgreSQL Crash Course\n\nLearn the fundamentals of PostgreSQL, from installation to writing your first queries.\n\n### Key Takeaways:\n- Installing PostgreSQL and pgAdmin\n- Creating databases and tables\n- Basic SELECT queries',
+        videoUrl: 'https://www.youtube.com/watch?v=zw4s3Ey8ayo',
+        order: 1,
+      },
+      {
+        title: '2. PostgreSQL Introduction: Beginner Crash Course',
+        content: '# PostgreSQL Introduction\n\nGo deeper into PostgreSQL fundamentals and hands-on database operations.\n\n### Best Practices:\n- Using constraints properly\n- Filtering with WHERE and comparison operators\n- Aggregate functions',
+        videoUrl: 'https://www.youtube.com/watch?v=bssWKAX74uA',
+        order: 2,
+      },
+    ],
+    quiz: {
+      title: 'Module 1: PostgreSQL Basics Quiz',
+      questions: [
+        {
+          questionText: 'Which SQL clause is used to filter rows based on a condition?',
+          options: ['GROUP BY', 'WHERE', 'ORDER BY', 'LIMIT'],
+          correctAnswerIndex: 1,
+        },
+        {
+          questionText: 'What kind of database management system is PostgreSQL?',
+          options: [
+            'A NoSQL document store',
+            'An object-relational database management system',
+            'A key-value cache',
+            'A graph database',
+          ],
+          correctAnswerIndex: 1,
+        },
+      ],
+    },
+  },
+  {
+    course: {
+      title: 'Git & GitHub Essentials for Developers',
+      description: '# Git & GitHub Essentials\n\nLearn version control fundamentals and collaborative workflows.\n\n### Highlights:\n- Core Git commands\n- Branching & merging\n- Pull requests on GitHub',
+      instructorEmail: 'tahsin.ins1@gmail.com',
+    },
+    lessons: [
+      {
+        title: '1. Git & GitHub Crash Course',
+        content: '# Git & GitHub Crash Course\n\nLearn the fundamentals of Git version control and the GitHub platform.\n\n### Key Takeaways:\n- git init, add, commit, push\n- Working with remotes\n- Basic branching',
+        videoUrl: 'https://www.youtube.com/watch?v=vA5TTz6BXhY',
+        order: 1,
+      },
+      {
+        title: '2. Git & GitHub Crash Course for Beginners',
+        content: '# Git & GitHub for Beginners\n\nReal workflows including branching, merging, stashing, rebase, and pull requests.\n\n### Best Practices:\n- Writing clear commit messages\n- Resolving merge conflicts\n- Using pull requests for review',
+        videoUrl: 'https://www.youtube.com/watch?v=mAFoROnOfHs',
+        order: 2,
+      },
+    ],
+    quiz: {
+      title: 'Module 1: Git & GitHub Quiz',
+      questions: [
+        {
+          questionText: 'Which command stages changes for the next commit?',
+          options: ['git commit', 'git add', 'git push', 'git branch'],
+          correctAnswerIndex: 1,
+        },
+        {
+          questionText: 'On GitHub, what is used to propose merging changes from one branch into another?',
+          options: ['A commit hook', 'A pull request', 'A gist', 'A fork tag'],
+          correctAnswerIndex: 1,
+        },
+      ],
+    },
+  },
+  {
+    course: {
+      title: 'TypeScript for Modern Web Development',
+      description: '# TypeScript for Modern Web Development\n\nAdd static typing to your JavaScript projects for safer, more maintainable code.\n\n### Highlights:\n- Basic types & interfaces\n- Generics\n- TypeScript with React',
+      instructorEmail: 'tahsin.ins@gmail.com',
+    },
+    lessons: [
+      {
+        title: '1. TypeScript Crash Course',
+        content: '# TypeScript Crash Course\n\nLearn TypeScript fundamentals: types, interfaces, classes, and generics.\n\n### Key Takeaways:\n- Basic types, arrays, and tuples\n- Interfaces vs types\n- Type assertion',
+        videoUrl: 'https://www.youtube.com/watch?v=BCg4U1FzODs',
+        order: 1,
+      },
+      {
+        title: '2. TypeScript Tutorial for Beginners',
+        content: "# TypeScript Tutorial for Beginners\n\nA beginner-friendly walkthrough of TypeScript's type system and tooling.\n\n### Best Practices:\n- Configuring tsconfig.json\n- Using generics for reusable code\n- Integrating TypeScript with existing JS projects",
+        videoUrl: 'https://www.youtube.com/watch?v=d56mG7DezGs',
+        order: 2,
+      },
+    ],
+    quiz: {
+      title: 'Module 1: TypeScript Basics Quiz',
+      questions: [
+        {
+          questionText: 'What is the main benefit TypeScript adds on top of JavaScript?',
+          options: [
+            'A new runtime that replaces Node.js',
+            'Static typing checked at compile time',
+            'Built-in database access',
+            'Automatic UI rendering',
+          ],
+          correctAnswerIndex: 1,
+        },
+        {
+          questionText: 'Which TypeScript feature allows writing reusable components that work with multiple types?',
+          options: ['Enums', 'Generics', 'Tuples', 'Namespaces'],
+          correctAnswerIndex: 1,
+        },
+      ],
+    },
+  },
+  {
+    course: {
+      title: 'Django REST Framework: Building APIs with Python',
+      description: '# Django REST Framework\n\nBuild robust REST APIs quickly using Django and Django REST Framework.\n\n### Highlights:\n- Serializers & viewsets\n- Routers\n- Authentication & permissions',
+      instructorEmail: 'tahsin.ins1@gmail.com',
+    },
+    lessons: [
+      {
+        title: '1. Django REST Framework Crash Course',
+        content: '# Django REST Framework Crash Course\n\nLearn to build and deploy a REST API with Django REST Framework.\n\n### Key Takeaways:\n- Setting up DRF in a Django project\n- Serializers\n- Basic CRUD endpoints',
+        videoUrl: 'https://www.youtube.com/watch?v=Mj3dGdBdiO4',
+        order: 1,
+      },
+      {
+        title: '2. Django REST Framework Full Crash Course',
+        content: '# Django REST Framework Full Crash Course\n\nBuild REST APIs in Django using DRF viewsets and routers.\n\n### Best Practices:\n- Using ModelViewSets\n- Wiring up routers\n- Testing endpoints with Postman',
+        videoUrl: 'https://www.youtube.com/watch?v=wv8b3tzShq4',
+        order: 2,
+      },
+    ],
+    quiz: {
+      title: 'Module 1: Django REST Framework Quiz',
+      questions: [
+        {
+          questionText: 'What does a DRF serializer primarily do?',
+          options: [
+            'Converts complex data like querysets into JSON and validates input data',
+            'Handles database migrations',
+            'Renders HTML templates',
+            'Manages static files',
+          ],
+          correctAnswerIndex: 0,
+        },
+        {
+          questionText: 'What DRF component automatically generates URL patterns for a ViewSet?',
+          options: ['Serializer', 'Router', 'Middleware', 'Signal'],
+          correctAnswerIndex: 1,
+        },
+      ],
+    },
+  },
+  {
+    course: {
+      title: 'Go (Golang) for Backend Developers',
+      description: '# Go (Golang) for Backend Developers\n\nLearn the Go programming language fundamentals for building fast backend services.\n\n### Highlights:\n- Syntax, types, and structs\n- Goroutines & concurrency basics\n- Building simple web servers',
+      instructorEmail: 'tahsin.ins@gmail.com',
+    },
+    lessons: [
+      {
+        title: '1. Go / Golang Crash Course',
+        content: '# Go / Golang Crash Course\n\nA comprehensive introduction to Go: variables, slices, conditionals, maps, and structs.\n\n### Key Takeaways:\n- Workspace setup and Hello World\n- Arrays, slices, and maps\n- Structs and interfaces',
+        videoUrl: 'https://www.youtube.com/watch?v=SqrbIlUwR0U',
+        order: 1,
+      },
+      {
+        title: '2. Golang Crash Course for Beginners',
+        content: '# Golang Crash Course for Beginners\n\nContinue building Go fundamentals with practical examples.\n\n### Best Practices:\n- Writing idiomatic Go\n- Error handling patterns\n- Using pointers effectively',
+        videoUrl: 'https://www.youtube.com/watch?v=JwAnZeQAaGQ',
+        order: 2,
+      },
+    ],
+    quiz: {
+      title: 'Module 1: Go Basics Quiz',
+      questions: [
+        {
+          questionText: 'What keyword is used to declare a variable with an inferred type in Go?',
+          options: ['var x = 5 only', 'x := 5', 'let x = 5', 'const x = 5 only'],
+          correctAnswerIndex: 1,
+        },
+        {
+          questionText: "What is idiomatic Go's approach to error handling?",
+          options: [
+            'try/catch blocks',
+            'Returning error values explicitly and checking them',
+            'Throwing exceptions',
+            'Ignoring errors by default',
+          ],
+          correctAnswerIndex: 1,
+        },
+      ],
+    },
+  },
+  {
+    course: {
+      title: 'DevOps Fundamentals: Docker, Terraform & CI/CD',
+      description: '# DevOps Fundamentals\n\nLearn essential DevOps and cloud infrastructure concepts.\n\n### Highlights:\n- Containers with Docker\n- Infrastructure as Code with Terraform\n- CI/CD with GitHub Actions',
+      instructorEmail: 'tahsin.ins1@gmail.com',
+    },
+    lessons: [
+      {
+        title: '1. DevOps Crash Course: Docker, Terraform, GitHub Actions',
+        content: '# DevOps Crash Course\n\nAn overview of Docker containers, Infrastructure as Code, and CI/CD pipelines.\n\n### Key Takeaways:\n- Dockerizing applications\n- Terraform basics for provisioning infrastructure\n- Automating deployments with GitHub Actions',
+        videoUrl: 'https://www.youtube.com/watch?v=OXE2a8dqIAI',
+        order: 1,
+      },
+      {
+        title: '2. Docker Tutorial: Crash Course',
+        content: '# Docker Tutorial Crash Course\n\nA focused look at building, shipping, and running distributed applications with Docker.\n\n### Best Practices:\n- Multi-stage builds\n- Networking between containers\n- Managing environment configuration',
+        videoUrl: 'https://www.youtube.com/watch?v=ccbh5YhxouQ',
+        order: 2,
+      },
+    ],
+    quiz: {
+      title: 'Module 1: DevOps Fundamentals Quiz',
+      questions: [
+        {
+          questionText: 'What is the main purpose of Infrastructure as Code tools like Terraform?',
+          options: [
+            'Writing frontend UI components',
+            'Provisioning and managing infrastructure through declarative config files',
+            'Compiling application source code',
+            'Replacing version control systems',
+          ],
+          correctAnswerIndex: 1,
+        },
+        {
+          questionText: 'What does CI/CD stand for in a DevOps workflow?',
+          options: [
+            'Code Integration / Code Deployment',
+            'Continuous Integration / Continuous Deployment',
+            'Container Isolation / Container Delivery',
+            'Cloud Infrastructure / Cloud Deployment',
+          ],
+          correctAnswerIndex: 1,
+        },
+      ],
+    },
+  },
+];
+
 async function seedDatabase() {
   const appContext = await compileStrapi();
   const strapi = await createStrapi(appContext).load();
@@ -37,7 +460,7 @@ async function seedDatabase() {
     console.log('Roles verified successfully.');
 
     console.log('Purging existing data (quiz results, progresses, enrollments, quizzes, lessons, courses, blogs, users)...');
-    
+
     const allQuizResults = await strapi.documents('api::quiz-result.quiz-result').findMany({});
     for (const r of allQuizResults) {
       await strapi.documents('api::quiz-result.quiz-result').delete({ documentId: r.documentId });
@@ -74,7 +497,7 @@ async function seedDatabase() {
         await strapi.documents('api::blog-post.blog-post').delete({ documentId: b.documentId });
       }
     } catch {
-      // ignore if blog-post is not yet populated
+      // ignore
     }
 
     const allUsers = await strapi.query('plugin::users-permissions.user').findMany({});
@@ -129,921 +552,89 @@ async function seedDatabase() {
       roleId: studentRole.id,
     });
 
-    console.log('All standard users provisioned cleanly.');
-    console.log('Seeding production-ready courses with rich markdown and valid video embeds...');
-
-    const course1 = await strapi.documents('api::course.course').create({
-      data: {
-        title: 'Full-Stack Next.js 16 & React 19 Architecture',
-        description: 'Master the complete lifecycle of modern full-stack web applications with Next.js 16 App Router and React 19. Dive deep into React Server Components (RSC), asynchronous Server Actions, edge middleware proxies, streaming SSR with Suspense, and Turbopack production builds. Perfect for frontend engineers transitioning into full-stack architects.',
-        owner: instructor1.id,
-      },
-    });
-
-    const c1Lesson1 = await strapi.documents('api::lesson.lesson').create({
-      data: {
-        title: '1. Next.js 16 App Router & RSC Deep Dive',
-        content: `# Next.js 16 App Router & Server Components
-
-Welcome to the Next.js 16 masterclass! In this introductory lesson, we explore the core building blocks of the App Router and React 19 architecture.
-
----
-
-### Key Concepts Covered:
-- **Server Components by Default**: Zero-bundle-size React components rendered exclusively on the server.
-- **Client Components (\`use client\`)**: Interactive client boundaries for local state and event listeners.
-- **Streaming & Suspense**: Progressively rendering UI chunks as data resolves from remote APIs.
-
-### Code Example:
-\`\`\`tsx
-// app/courses/page.tsx (Server Component)
-import { Suspense } from 'react';
-import { CourseList } from '@/components/courses/course-list';
-import { CourseSkeleton } from '@/components/courses/course-skeleton';
-
-export default async function CoursesPage() {
-  return (
-    <main className="container mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-6">Available Courses</h1>
-      <Suspense fallback={<CourseSkeleton />}>
-        <CourseList />
-      </Suspense>
-    </main>
-  );
-}
-\`\`\`
-
-### Architectural Principles:
-1. **Push State to the Leaves**: Keep stateful interactive components as far down the component tree as possible.
-2. **Parallel Data Fetching**: Eliminate network waterfalls by initiating requests simultaneously using \`Promise.all()\`.
-3. **Automatic Code Splitting**: Client components are automatically split into separate bundle chunks.`,
-        videoUrl: 'https://www.youtube.com/watch?v=ZVnjOPwW4ZA',
-        order: 1,
-        course: course1.documentId,
-      },
-    });
-
-    const c1Lesson2 = await strapi.documents('api::lesson.lesson').create({
-      data: {
-        title: '2. Server Actions, Mutations & Optimistic State',
-        content: `# Server Actions & Data Mutations
-
-Server Actions allow you to run asynchronous server code directly from forms and event handlers without maintaining ad-hoc API route handlers.
-
----
-
-### Anatomy of a Server Action:
-\`\`\`typescript
-'use server';
-
-import { revalidatePath } from 'next/cache';
-import { db } from '@/lib/db';
-
-export async function enrollInCourse(courseId: string, studentId: string) {
-  if (!studentId) {
-    throw new Error('Authentication required');
-  }
-
-  const enrollment = await db.enrollment.create({
-    data: {
-      courseId,
-      studentId,
-      enrolledAt: new Date(),
-    },
-  });
-
-  // Purge cached course page so UI reflects enrolled status immediately
-  revalidatePath(\`/courses/\${courseId}\`);
-  return { success: true, enrollment };
-}
-\`\`\`
-
-### Key Advantages:
-- **Progressive Enhancement**: Forms work even if JavaScript fails to load on slow mobile connections.
-- **Built-in CSRF Protection**: Next.js automatically validates request origins and tokens.
-- **Optimistic UI**: Pair Server Actions with React 19's \`useOptimistic\` hook for instant user feedback.`,
-        videoUrl: 'https://www.youtube.com/watch?v=843nec-IvW0',
-        order: 2,
-        course: course1.documentId,
-      },
-    });
-
-    const c1Lesson3 = await strapi.documents('api::lesson.lesson').create({
-      data: {
-        title: '3. Edge Proxy, Authentication & Session Security',
-        content: `# Edge Proxy & Authentication Security
-
-Learn how to securely manage session tokens, HttpOnly cookies, and role-based route guards at the network edge using Next.js 16 Proxy layer.
-
----
-
-### Token Rotation Strategy:
-1. **Access Token**: Short-lived (15 minutes), stored in memory or secure HttpOnly cookie.
-2. **Refresh Token**: Long-lived (30 days), stored in an \`HttpOnly\`, \`SameSite=Lax\`, \`Secure\` cookie.
-3. **Edge Validation**: Proxy intercepts requests to protected routes (\`/dashboard\`, \`/courses/:id/lessons/:id\`) and validates authorization before rendering.
-
-\`\`\`typescript
-// proxy.ts (Next.js Edge Proxy)
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-
-export function proxy(request: NextRequest) {
-  const token = request.cookies.get('jwt')?.value;
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/dashboard');
-
-  if (isAuthRoute && !token) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  return NextResponse.next();
-}
-\`\`\``,
-        videoUrl: 'https://www.youtube.com/watch?v=ZVnjOPwW4ZA',
-        order: 3,
-        course: course1.documentId,
-      },
-    });
-
-    const c1Lesson4 = await strapi.documents('api::lesson.lesson').create({
-      data: {
-        title: '4. Turbopack, Streaming Suspense & Caching Lifecycles',
-        content: `# Turbopack & Production Optimizations
-
-Explore the speed of the Turbopack engine in Next.js 16 and optimize production builds with font subsets, script offloading, and cache tagging.
-
----
-
-### Four Levels of Next.js Caching:
-| Layer | Where | Purpose | Duration |
-| :--- | :--- | :--- | :--- |
-| **Request Memoization** | Server | Deduplicates \`fetch\` calls during a single render pass | Per-request |
-| **Data Cache** | Server | Persists API data across incoming user requests | Configurable (\`revalidate\`) |
-| **Full Route Cache** | Server | Caches HTML and RSC payload at build time | Until revalidated |
-| **Router Cache** | Client | In-memory cache in the browser for fast client navigation | Session |
-
-### Revalidation Example:
-\`\`\`typescript
-// Revalidating specific data tags on demand
-import { revalidateTag } from 'next/cache';
-
-export async function publishCourse(courseId: string) {
-  await api.publish(courseId);
-  revalidateTag('course-list');
-}
-\`\`\``,
-        videoUrl: 'https://www.youtube.com/watch?v=843nec-IvW0',
-        order: 4,
-        course: course1.documentId,
-      },
-    });
-
-    await strapi.documents('api::quiz.quiz').create({
-      data: {
-        title: 'Next.js 16 Architecture & Server Components Assessment',
-        course: course1.documentId,
-        questions: [
-          {
-            questionText: 'By default, all components inside the Next.js App Router are:',
-            options: [
-              'Client Components',
-              'React Server Components (RSC)',
-              'Static HTML templates only',
-              'Web Workers',
-            ],
-            correctAnswerIndex: 1,
-          },
-          {
-            questionText: 'Which directive marks an asynchronous function as a Server Action?',
-            options: ['"use server"', '"use client"', '"use backend"', '"use api"'],
-            correctAnswerIndex: 0,
-          },
-          {
-            questionText: 'What is the primary architectural benefit of React Server Components?',
-            options: [
-              'They can handle browser DOM click events directly',
-              'They do not ship any JavaScript bundle to the client, drastically reducing download size',
-              'They replace CSS styling completely',
-              'They disable server-side rendering',
-            ],
-            correctAnswerIndex: 1,
-          },
-          {
-            questionText: 'Which function is used to invalidate and purge cached page data in Server Actions?',
-            options: ['revalidatePath()', 'refreshRoute()', 'purgeCache()', 'reloadServer()'],
-            correctAnswerIndex: 0,
-          },
-        ],
-      },
-    });
-
-    const course2 = await strapi.documents('api::course.course').create({
-      data: {
-        title: 'Advanced TypeScript 5 & Enterprise Design Patterns',
-        description: 'Take your TypeScript skills from intermediate to staff engineer level. Learn type-level programming, conditional types, template literal types, mapped types, advanced generics, and enterprise object-oriented design patterns including Dependency Injection, Factory, and Strategy patterns for mission-critical software systems.',
-        owner: instructor1.id,
-      },
-    });
-
-    await strapi.documents('api::lesson.lesson').create({
-      data: {
-        title: '1. Type-Level Programming & Conditional Types',
-        content: `# Type-Level Programming in TypeScript 5
-
-Master type transformations using conditional types, the \`infer\` keyword, and recursive type definitions.
-
----
-
-### Conditional Type Syntax:
-\`\`\`typescript
-type TypeName<T> =
-  T extends string ? "string" :
-  T extends number ? "number" :
-  T extends boolean ? "boolean" :
-  T extends undefined ? "undefined" :
-  T extends Function ? "function" :
-  "object";
-
-// Unpack Promise Return Type using infer
-type UnpackPromise<T> = T extends Promise<infer R> ? R : T;
-
-type Example = UnpackPromise<Promise<{ id: string; name: string }>>;
-// Resolved type: { id: string; name: string }
-\`\`\`
-
-### Practical Use Case:
-Conditional types allow you to build strictly typed API client builders that dynamically infer response structures based on the endpoint route.`,
-        videoUrl: 'https://www.youtube.com/watch?v=30LWjhZzg50',
-        order: 1,
-        course: course2.documentId,
-      },
-    });
-
-    await strapi.documents('api::lesson.lesson').create({
-      data: {
-        title: '2. Advanced Generics & Mapped Utility Types',
-        content: `# Advanced Generics & Mapped Utility Types
-
-Learn how to construct custom utility types that enforce immutability, make nested properties optional, or filter object keys dynamically.
-
----
-
-### Deep Readonly Implementation:
-\`\`\`typescript
-type DeepReadonly<T> = {
-  readonly [P in keyof T]: T[P] extends object ? DeepReadonly<T[P]> : T[P];
-};
-
-interface UserConfig {
-  theme: {
-    colors: {
-      primary: string;
-      secondary: string;
+    const userMap = {
+      'tahsin.ins@gmail.com': instructor1,
+      'tahsin.ins1@gmail.com': instructor2,
+      'tahsin.admin@gmail.com': adminUser,
+      'tahsin.con@gmail.com': cmUser,
     };
-  };
-}
 
-const config: DeepReadonly<UserConfig> = {
-  theme: {
-    colors: {
-      primary: '#6366f1',
-      secondary: '#10b981',
-    },
-  },
-};
+    console.log('All standard users provisioned cleanly.');
+    console.log(`Seeding ${courseSeeds.length} rich courses, lessons, and quizzes...`);
 
-// config.theme.colors.primary = '#000'; // Error: Cannot assign to read only property
-\`\`\``,
-        videoUrl: 'https://www.youtube.com/watch?v=gieEQFIfgYc',
-        order: 2,
-        course: course2.documentId,
-      },
-    });
+    const createdCourses = [];
 
-    await strapi.documents('api::lesson.lesson').create({
-      data: {
-        title: '3. Dependency Injection & Clean Architecture',
-        content: `# Dependency Injection & Clean Architecture
+    for (const item of courseSeeds) {
+      const instructor = userMap[item.course.instructorEmail] || instructor1;
 
-Structure large-scale enterprise applications using loose coupling, interface contracts, and inversion of control.
+      const courseDoc = await strapi.documents('api::course.course').create({
+        data: {
+          title: item.course.title,
+          description: item.course.description,
+          owner: instructor.id,
+        },
+      });
 
----
+      createdCourses.push(courseDoc);
 
-### Strategy Pattern in TypeScript:
-\`\`\`typescript
-interface PaymentGateway {
-  charge(amount: number, currency: string): Promise<boolean>;
-}
-
-class StripeGateway implements PaymentGateway {
-  async charge(amount: number, currency: string): Promise<boolean> {
-    console.log(\`Charging \${amount} \${currency} via Stripe\`);
-    return true;
-  }
-}
-
-class CheckoutService {
-  constructor(private gateway: PaymentGateway) {}
-
-  async processOrder(total: number) {
-    return this.gateway.charge(total, 'USD');
-  }
-}
-\`\`\``,
-        videoUrl: 'https://www.youtube.com/watch?v=30LWjhZzg50',
-        order: 3,
-        course: course2.documentId,
-      },
-    });
-
-    await strapi.documents('api::quiz.quiz').create({
-      data: {
-        title: 'TypeScript Type-Level Mastery Assessment',
-        course: course2.documentId,
-        questions: [
-          {
-            questionText: 'What keyword is used in TypeScript conditional types to deduce an inner type parameter?',
-            options: ['infer', 'extract', 'deduce', 'yield'],
-            correctAnswerIndex: 0,
+      for (const l of item.lessons) {
+        await strapi.documents('api::lesson.lesson').create({
+          data: {
+            title: l.title,
+            content: l.content,
+            videoUrl: l.videoUrl,
+            order: l.order,
+            course: courseDoc.documentId,
           },
-          {
-            questionText: 'Which utility type constructs a type with all properties of T set to optional?',
-            options: ['Partial<T>', 'Required<T>', 'Readonly<T>', 'Record<K, T>'],
-            correctAnswerIndex: 0,
+        });
+      }
+
+      if (item.quiz) {
+        await strapi.documents('api::quiz.quiz').create({
+          data: {
+            title: item.quiz.title,
+            course: courseDoc.documentId,
+            questions: item.quiz.questions,
           },
-          {
-            questionText: 'In Dependency Injection, high-level modules should depend upon:',
-            options: [
-              'Concrete implementations directly',
-              'Abstractions and interfaces',
-              'Global state variables',
-              'DOM elements',
-            ],
-            correctAnswerIndex: 1,
-          },
-        ],
-      },
-    });
-
-    const course3 = await strapi.documents('api::course.course').create({
-      data: {
-        title: 'Headless CMS Masterclass: Strapi v5 Enterprise',
-        description: 'Architect and scale enterprise-grade headless content platforms with Strapi v5. Learn how to configure custom Document Services, craft robust Role-Based Access Control (RBAC) policies, build secure server-side auto-grading engines, manage relational lifecycles, and deploy to Railway production environments with zero downtime.',
-        owner: instructor2.id,
-      },
-    });
-
-    await strapi.documents('api::lesson.lesson').create({
-      data: {
-        title: '1. Strapi v5 Document Service & Architecture',
-        content: `# Document Service API in Strapi v5
-
-In Strapi v5, \`strapi.documents\` replaces the legacy Entity Service for typed document manipulation and automated draft/publish lifecycle states.
-
----
-
-### Querying Documents:
-\`\`\`javascript
-// Fetch published courses with populated relations
-const courses = await strapi.documents('api::course.course').findMany({
-  filters: { publishedAt: { $ne: null } },
-  populate: ['owner', 'lessons', 'quizzes'],
-  sort: { createdAt: 'desc' },
-});
-\`\`\`
-
-### Document vs Entity Service:
-- **Unified Draft & Publish**: Manage draft states cleanly without separate database tables.
-- **Stable DocumentId**: The \`documentId\` string remains constant across draft and published versions, while numeric \`id\` represents the specific version row.`,
-        videoUrl: 'https://www.youtube.com/watch?v=6FnwAbd2SDY',
-        order: 1,
-        course: course3.documentId,
-      },
-    });
-
-    await strapi.documents('api::lesson.lesson').create({
-      data: {
-        title: '2. Role-Based Access Control (RBAC) & Custom Policies',
-        content: `# Custom RBAC Policies & Security Shield
-
-Learn how to write custom policies for fine-grained authorization and prevent unauthorized data leaks.
-
----
-
-### Creating an Enrollment Policy:
-\`\`\`javascript
-// src/api/lesson/policies/is-enrolled.js
-module.exports = async (policyContext, config, { strapi }) => {
-  const user = policyContext.state.user;
-  if (!user) return false;
-
-  const lessonId = policyContext.params.id;
-  const lesson = await strapi.documents('api::lesson.lesson').findOne({
-    documentId: lessonId,
-    populate: ['course'],
-  });
-
-  if (!lesson || !lesson.course) return false;
-
-  const enrollment = await strapi.documents('api::enrollment.enrollment').findFirst({
-    filters: {
-      student: { id: user.id },
-      course: { documentId: lesson.course.documentId },
-    },
-  });
-
-  return !!enrollment;
-};
-\`\`\``,
-        videoUrl: 'https://www.youtube.com/watch?v=vfnv_tQyL2A',
-        order: 2,
-        course: course3.documentId,
-      },
-    });
-
-    await strapi.documents('api::lesson.lesson').create({
-      data: {
-        title: '3. Lifecycle Hooks & Custom Controller Pipelines',
-        content: `# Lifecycle Hooks & Custom Controller Pipelines
-
-Extend Strapi controllers with custom business logic such as automated score grading and submission auditing.
-
----
-
-### Auto-Grading Pattern:
-\`\`\`javascript
-// src/api/quiz-result/controllers/quiz-result.js
-module.exports = createCoreController('api::quiz-result.quiz-result', ({ strapi }) => ({
-  async submit(ctx) {
-    const { user } = ctx.state;
-    const { quizId, answers } = ctx.request.body.data;
-
-    // 1. Fetch official answer key from database (server-side only)
-    const quiz = await strapi.documents('api::quiz.quiz').findOne({
-      documentId: quizId,
-      populate: ['questions'],
-    });
-
-    // 2. Evaluate score securely
-    let score = 0;
-    const detailed = quiz.questions.map((q, idx) => {
-      const studentAns = answers.find(a => a.questionIndex === idx);
-      const isCorrect = studentAns?.selectedOptionIndex === q.correctAnswerIndex;
-      if (isCorrect) score++;
-      return { questionText: q.questionText, isCorrect };
-    });
-
-    // 3. Save result
-    return strapi.documents('api::quiz-result.quiz-result').create({
-      data: { student: user.id, quiz: quizId, score, answers: detailed },
-    });
-  },
-}));
-\`\`\``,
-        videoUrl: 'https://www.youtube.com/watch?v=6FnwAbd2SDY',
-        order: 3,
-        course: course3.documentId,
-      },
-    });
-
-    await strapi.documents('api::quiz.quiz').create({
-      data: {
-        title: 'Strapi v5 Core Concepts & Security Assessment',
-        course: course3.documentId,
-        questions: [
-          {
-            questionText: 'Which API in Strapi v5 is the official standard for managing document lifecycles?',
-            options: ['strapi.documents', 'strapi.entityService', 'strapi.db.query', 'strapi.orm'],
-            correctAnswerIndex: 0,
-          },
-          {
-            questionText: 'Where are custom route security checks placed in Strapi?',
-            options: ['In policies and custom controller handlers', 'In frontend CSS', 'In next.config.ts only', 'In the public folder'],
-            correctAnswerIndex: 0,
-          },
-          {
-            questionText: 'What is the purpose of documentId in Strapi v5?',
-            options: [
-              'It provides a permanent identifier across draft and published versions',
-              'It stores user passwords',
-              'It generates random UUIDs for images only',
-              'It replaces the database port number',
-            ],
-            correctAnswerIndex: 0,
-          },
-        ],
-      },
-    });
-
-    const course4 = await strapi.documents('api::course.course').create({
-      data: {
-        title: 'Modern CSS, Tailwind CSS v4 & Design Systems',
-        description: 'Build fluid, responsive, accessible, and visually stunning web interfaces using Tailwind CSS v4 and modern CSS features like CSS subgrid, container queries, and CSS variables. Learn how to construct design tokens, dark mode palettes, and component libraries with micro-animations.',
-        owner: instructor2.id,
-      },
-    });
-
-    await strapi.documents('api::lesson.lesson').create({
-      data: {
-        title: '1. Tailwind CSS v4 Architecture & CSS Variables',
-        content: `# Tailwind CSS v4 Architecture
-
-Explore the high-performance Rust-powered Tailwind CSS v4 engine and its unified CSS-first configuration.
-
----
-
-### Core Enhancements:
-- **No \`tailwind.config.js\` needed**: Configure themes directly inside CSS using \`@theme\` directives.
-- **Native CSS Variables**: First-class color tokens with OKLCH color space for vibrant gamuts.
-- **Lightning Fast Compilation**: Instant hot-module replacement via Lightning CSS.
-
-\`\`\`css
-@import "tailwindcss";
-
-@theme {
-  --color-brand-500: oklch(0.65 0.24 264.4);
-  --font-display: "Outfit", sans-serif;
-}
-\`\`\``,
-        videoUrl: 'https://www.youtube.com/watch?v=ft30zcMlFao',
-        order: 1,
-        course: course4.documentId,
-      },
-    });
-
-    await strapi.documents('api::lesson.lesson').create({
-      data: {
-        title: '2. Design Tokens, Dark Modes & Fluid Typography',
-        content: `# Design Tokens & Fluid Typography
-
-Implement robust dark mode color tokens using CSS variables and HSL/OKLCH color models.
-
----
-
-### Dark Mode Token Pattern:
-\`\`\`css
-:root {
-  --background: hsl(0 0% 100%);
-  --foreground: hsl(240 10% 3.9%);
-  --card: hsl(0 0% 100%);
-  --primary: hsl(240 5.9% 10%);
-}
-
-.dark {
-  --background: hsl(240 10% 3.9%);
-  --foreground: hsl(0 0% 98%);
-  --card: hsl(240 10% 4.9%);
-  --primary: hsl(0 0% 98%);
-}
-\`\`\``,
-        videoUrl: 'https://www.youtube.com/watch?v=lCxcTsOHrjo',
-        order: 2,
-        course: course4.documentId,
-      },
-    });
-
-    await strapi.documents('api::lesson.lesson').create({
-      data: {
-        title: '3. Accessible Components & Micro-Animations',
-        content: `# Accessible Components & Micro-Animations
-
-Create interactive UI components with smooth micro-animations and full keyboard accessibility.
-
----
-
-### Micro-Animation Best Practices:
-- Keep transitions between **150ms and 250ms** for crisp, responsive user feedback.
-- Use \`cubic-bezier(0.16, 1, 0.3, 1)\` easing curves for natural organic motion.
-- Respect \`prefers-reduced-motion\` for accessibility.`,
-        videoUrl: 'https://www.youtube.com/watch?v=ft30zcMlFao',
-        order: 3,
-        course: course4.documentId,
-      },
-    });
-
-    await strapi.documents('api::quiz.quiz').create({
-      data: {
-        title: 'Modern CSS & Tailwind Design Assessment',
-        course: course4.documentId,
-        questions: [
-          {
-            questionText: 'What is a key architectural feature introduced in Tailwind CSS v4?',
-            options: [
-              'CSS-first configuration using @theme without requiring tailwind.config.js',
-              'Removal of all CSS utility classes',
-              'Requiring PHP runtime for compilation',
-              'Deprecation of responsive prefixes',
-            ],
-            correctAnswerIndex: 0,
-          },
-          {
-            questionText: 'Which CSS media feature detects when a user prefers minimal UI animation?',
-            options: ['prefers-reduced-motion', 'prefers-color-scheme', 'min-resolution', 'orientation'],
-            correctAnswerIndex: 0,
-          },
-          {
-            questionText: 'What color format in modern CSS provides wider gamut and uniform perceptual lightness?',
-            options: ['OKLCH', 'RGB Hex only', 'Named web colors only', 'CMYK'],
-            correctAnswerIndex: 0,
-          },
-        ],
-      },
-    });
-
-    const course5 = await strapi.documents('api::course.course').create({
-      data: {
-        title: 'Scalable Backend Engineering with Node.js & Express',
-        description: 'Build robust, scalable, and resilient backend microservices and RESTful APIs using Node.js and Express. Explore asynchronous event loop internals, middleware design patterns, rate limiting, JWT token rotation, structured logging, and automated testing with Jest and Supertest.',
-        owner: instructor1.id,
-      },
-    });
-
-    await strapi.documents('api::lesson.lesson').create({
-      data: {
-        title: '1. Node.js Event Loop & Asynchronous Architecture',
-        content: `# Node.js Event Loop Internals
-
-Understand how Node.js manages thousands of concurrent I/O operations on a single thread using libuv and the event loop phases.
-
----
-
-### Event Loop Phases:
-1. **Timers**: Executes callbacks scheduled by \`setTimeout\` and \`setInterval\`.
-2. **Pending Callbacks**: Executes I/O callbacks deferred to the next loop iteration.
-3. **Poll**: Retrieves new I/O events and executes their callbacks.
-4. **Check**: Executes \`setImmediate\` callbacks.
-5. **Close Callbacks**: Handles socket closures and cleanup.
-
-\`\`\`javascript
-console.log('1: Sync');
-setTimeout(() => console.log('2: Timer'), 0);
-Promise.resolve().then(() => console.log('3: Microtask'));
-console.log('4: Sync');
-
-// Output order: 1 -> 4 -> 3 -> 2
-\`\`\``,
-        videoUrl: 'https://www.youtube.com/watch?v=Oe421EPjeBE',
-        order: 1,
-        course: course5.documentId,
-      },
-    });
-
-    await strapi.documents('api::lesson.lesson').create({
-      data: {
-        title: '2. RESTful API Design & Error Handling Middleware',
-        content: `# Error Handling Middleware Architecture
-
-Implement centralized, structured error handling pipelines in Express.
-
----
-
-### Central Error Handler:
-\`\`\`javascript
-class AppError extends Error {
-  constructor(message, statusCode) {
-    super(message);
-    this.statusCode = statusCode;
-    this.status = \`\${statusCode}\`.startsWith('4') ? 'fail' : 'error';
-    this.isOperational = true;
-  }
-}
-
-// Global error handling middleware (must have 4 arguments)
-app.use((err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  res.status(statusCode).json({
-    status: err.status || 'error',
-    message: err.message || 'Internal Server Error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
-  });
-});
-\`\`\``,
-        videoUrl: 'https://www.youtube.com/watch?v=f2EqECiTBL8',
-        order: 2,
-        course: course5.documentId,
-      },
-    });
-
-    await strapi.documents('api::lesson.lesson').create({
-      data: {
-        title: '3. JWT Authentication, Refresh Tokens & Rate Limiting',
-        content: `# Authentication & Rate Limiting
-
-Protect your API endpoints against brute force attacks and credential stuffing using token rotation and Redis rate limiters.
-
----
-
-### Rate Limiter Setup:
-\`\`\`javascript
-const rateLimit = require('express-rate-limit');
-
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 login attempts per window
-  message: { error: 'Too many login attempts. Please try again later.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-app.use('/api/auth/local', authLimiter);
-\`\`\``,
-        videoUrl: 'https://www.youtube.com/watch?v=Oe421EPjeBE',
-        order: 3,
-        course: course5.documentId,
-      },
-    });
-
-    await strapi.documents('api::quiz.quiz').create({
-      data: {
-        title: 'Backend Architecture & Node.js Assessment',
-        course: course5.documentId,
-        questions: [
-          {
-            questionText: 'Which C/C++ library handles the event loop and asynchronous I/O in Node.js?',
-            options: ['libuv', 'v8 engine', 'npm', 'glibc'],
-            correctAnswerIndex: 0,
-          },
-          {
-            questionText: 'What is the special requirement for an Express middleware to be recognized as an error handler?',
-            options: [
-              'It must accept exactly 4 arguments (err, req, res, next)',
-              'It must be named errorHandler.js',
-              'It must return a Promise',
-              'It must be placed at the very top of server.js',
-            ],
-            correctAnswerIndex: 0,
-          },
-          {
-            questionText: 'What is the primary benefit of storing Refresh Tokens in HttpOnly cookies?',
-            options: [
-              'They cannot be read or stolen by malicious JavaScript via XSS attacks',
-              'They make the API 10x faster',
-              'They eliminate the need for HTTPS',
-              'They are automatically translated into multiple languages',
-            ],
-            correctAnswerIndex: 0,
-          },
-        ],
-      },
-    });
-
-    const course6 = await strapi.documents('api::course.course').create({
-      data: {
-        title: 'Relational Database Modeling with PostgreSQL & SQL',
-        description: 'Master database design, relational normalization, indexing strategies, and query optimization in PostgreSQL. Learn how to write complex SQL joins, window functions, CTEs (Common Table Expressions), ACID transaction rollbacks, and manage database migrations safely in production.',
-        owner: instructor2.id,
-      },
-    });
-
-    await strapi.documents('api::lesson.lesson').create({
-      data: {
-        title: '1. Relational Schema Design & Normalization',
-        content: `# Relational Schema Design & Normalization
-
-Design clean, anomaly-free database structures through 1NF, 2NF, and 3NF normalization principles.
-
----
-
-### Normalization Forms:
-- **1NF (First Normal Form)**: Each column contains atomic (indivisible) values, and each record is unique with a primary key.
-- **2NF (Second Normal Form)**: Meets 1NF, and all non-key attributes are fully functionally dependent on the primary key.
-- **3NF (Third Normal Form)**: Meets 2NF, and there are no transitive dependencies (non-key columns do not depend on other non-key columns).
-
-\`\`\`sql
--- Normalized Enrollment Table
-CREATE TABLE enrollments (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  student_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
-  enrolled_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT unique_student_course UNIQUE (student_id, course_id)
-);
-\`\`\``,
-        videoUrl: 'https://www.youtube.com/watch?v=qw--VYLpxG4',
-        order: 1,
-        course: course6.documentId,
-      },
-    });
-
-    await strapi.documents('api::lesson.lesson').create({
-      data: {
-        title: '2. Advanced SQL: Window Functions, CTEs & Indexing',
-        content: `# Advanced SQL: Window Functions & CTEs
-
-Unlock the power of analytical SQL with Common Table Expressions (CTEs) and Window Functions.
-
----
-
-### Ranking Top Scores per Course:
-\`\`\`sql
-WITH RankedResults AS (
-  SELECT
-    student_id,
-    course_id,
-    score,
-    ROW_NUMBER() OVER (
-      PARTITION BY course_id 
-      ORDER BY score DESC
-    ) as rank_position
-  FROM quiz_results
-)
-SELECT * FROM RankedResults WHERE rank_position <= 3;
-\`\`\`
-
-### Indexing Strategy:
-- **B-Tree Indexes**: Default index for equality and range queries (\`WHERE status = 'active'\`).
-- **Composite Indexes**: Multi-column indexes (\`CREATE INDEX idx_student_course ON enrollments(student_id, course_id)\`).`,
-        videoUrl: 'https://www.youtube.com/watch?v=qw--VYLpxG4',
-        order: 2,
-        course: course6.documentId,
-      },
-    });
-
-    await strapi.documents('api::lesson.lesson').create({
-      data: {
-        title: '3. ACID Transactions, Locks & Migration Pipelines',
-        content: `# ACID Transactions & Isolation Levels
-
-Ensure absolute data consistency during financial transactions and high-concurrency balance updates.
-
----
-
-### ACID Principles:
-- **Atomicity**: All operations in a transaction succeed or all fail together.
-- **Consistency**: The database transitions from one valid state to another valid state.
-- **Isolation**: Concurrent transactions execute without interfering with one another.
-- **Durability**: Committed data is saved permanently to non-volatile storage.
-
-\`\`\`sql
-BEGIN;
-  UPDATE accounts SET balance = balance - 100 WHERE id = 1;
-  UPDATE accounts SET balance = balance + 100 WHERE id = 2;
-COMMIT;
-\`\`\``,
-        videoUrl: 'https://www.youtube.com/watch?v=qw--VYLpxG4',
-        order: 3,
-        course: course6.documentId,
-      },
-    });
-
-    await strapi.documents('api::quiz.quiz').create({
-      data: {
-        title: 'PostgreSQL & Database Engineering Assessment',
-        course: course6.documentId,
-        questions: [
-          {
-            questionText: 'What does the "A" in ACID database properties stand for?',
-            options: ['Atomicity', 'Availability', 'Asynchronous', 'Authorization'],
-            correctAnswerIndex: 0,
-          },
-          {
-            questionText: 'Which SQL clause is used to define Common Table Expressions?',
-            options: ['WITH', 'HAVING', 'GROUP BY', 'JOIN'],
-            correctAnswerIndex: 0,
-          },
-          {
-            questionText: 'What type of index is the default in PostgreSQL for general equality and range queries?',
-            options: ['B-Tree', 'GIN', 'GiST', 'BRIN'],
-            correctAnswerIndex: 0,
-          },
-        ],
-      },
-    });
+        });
+      }
+    }
 
     console.log('Enrolling tahsin_student in Course 1 with progress records...');
-    await strapi.documents('api::enrollment.enrollment').create({
-      data: {
-        student: studentUser.id,
-        course: course1.documentId,
-        enrolledAt: new Date(),
-      },
-    });
+    if (createdCourses.length > 0) {
+      const firstCourse = createdCourses[0];
+      await strapi.documents('api::enrollment.enrollment').create({
+        data: {
+          student: studentUser.id,
+          course: firstCourse.documentId,
+          enrolledAt: new Date(),
+        },
+      });
 
-    await strapi.documents('api::lesson-progress.lesson-progress').create({
-      data: {
-        student: studentUser.id,
-        lesson: c1Lesson1.documentId,
-        completed: true,
-        completedAt: new Date(),
-      },
-    });
+      const firstCourseLessons = await strapi.documents('api::lesson.lesson').findMany({
+        filters: { course: { documentId: firstCourse.documentId } },
+      });
 
-    await strapi.documents('api::lesson-progress.lesson-progress').create({
-      data: {
-        student: studentUser.id,
-        lesson: c1Lesson2.documentId,
-        completed: true,
-        completedAt: new Date(),
-      },
-    });
+      if (firstCourseLessons.length > 0) {
+        await strapi.documents('api::lesson-progress.lesson-progress').create({
+          data: {
+            student: studentUser.id,
+            lesson: firstCourseLessons[0].documentId,
+            completed: true,
+            completedAt: new Date(),
+          },
+        });
+      }
+    }
 
     console.log('Seeding editorial blog posts (published and draft articles)...');
-    
+
     await strapi.documents('api::blog-post.blog-post').create({
       data: {
-        title: 'The Future of Full-Stack Architecture: React 19 & Next.js 16',
-        body: `# The Future of Full-Stack Architecture: React 19 & Next.js 16
+        title: 'The Future of Full-Stack Architecture: React 19 & Next.js 16 Paradigms',
+        body: `# The Future of Full-Stack Architecture: React 19 & Next.js 16 Paradigms
 
-Modern web development has undergone a paradigm shift with the convergence of **React 19** and the **Next.js 16 App Router**. Gone are the days when frontend and backend were isolated silos communicating solely over cumbersome REST endpoints.
+The JavaScript and TypeScript ecosystem has reached a defining milestone with the release of **Next.js 16** and **React 19**. 
 
 ---
 
@@ -1071,8 +662,8 @@ export default async function CourseCatalogPage() {
 When architecting enterprise-grade applications, combine RSC with client-side optimistic UI updates for instantaneous user perception and flawless data consistency.`,
         coverImageUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&auto=format&fit=crop&q=80',
         author: cmUser.id,
+        publishedAt: new Date(),
       },
-      status: 'published',
     });
 
     await strapi.documents('api::blog-post.blog-post').create({
@@ -1100,8 +691,8 @@ if (role === 'Instructor' && course.owner.id !== user.id) {
 By codifying these policies directly into the CMS lifecycle, platform integrity remains uncompromised.`,
         coverImageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&auto=format&fit=crop&q=80',
         author: cmUser.id,
+        publishedAt: new Date(),
       },
-      status: 'published',
     });
 
     await strapi.documents('api::blog-post.blog-post').create({
@@ -1127,8 +718,8 @@ CREATE INDEX idx_student_lesson_progress ON lesson_progresses (student_id, lesso
 Regularly profile your queries using \`EXPLAIN ANALYZE\` to ensure query plans leverage index scans rather than expensive sequential table scans.`,
         coverImageUrl: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=1200&auto=format&fit=crop&q=80',
         author: adminUser.id,
+        publishedAt: new Date(),
       },
-      status: 'published',
     });
 
     await strapi.documents('api::blog-post.blog-post').create({
@@ -1149,11 +740,11 @@ Regularly profile your queries using \`EXPLAIN ANALYZE\` to ensure query plans l
 Stay tuned for our upcoming public beta announcement!`,
         coverImageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&auto=format&fit=crop&q=80',
         author: cmUser.id,
+        publishedAt: null,
       },
-      status: 'draft',
     });
 
-    console.log('LMS Database successfully seeded with 6 rich courses, lessons, quizzes, and editorial blogs!');
+    console.log(`LMS Database successfully seeded with ${courseSeeds.length} rich courses, lessons, quizzes, and editorial blogs!`);
   } catch (err) {
     console.error('Error during LMS database seeding:', err);
     throw err;

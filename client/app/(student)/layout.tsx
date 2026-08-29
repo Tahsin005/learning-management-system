@@ -17,8 +17,10 @@ export default function StudentLayout({
   const { user, roleType, isAuthenticated, isInitialized, isLoading } = useAuth();
 
   useEffect(() => {
-    if (isInitialized && isAuthenticated && roleType && !["student", "admin"].includes(roleType)) {
-      if (roleType === "instructor") {
+    if (isInitialized && isAuthenticated && roleType !== "student") {
+      if (roleType === "admin") {
+        router.replace("/admin");
+      } else if (roleType === "instructor") {
         router.replace("/instructor");
       } else if (roleType === "content_manager") {
         router.replace("/content");
@@ -59,30 +61,9 @@ export default function StudentLayout({
     );
   }
 
-  if (!roleType || !["student", "admin"].includes(roleType)) {
-    if (!roleType) {
-      return (
-        <div className="flex flex-1 flex-col items-center justify-center p-8 text-center space-y-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive border border-destructive/20">
-            <ShieldAlert className="h-7 w-7" />
-          </div>
-          <div className="space-y-1.5">
-            <h2 className="text-xl font-bold text-foreground">Access Restricted</h2>
-            <p className="text-xs text-muted-foreground max-w-md">
-              No valid student or administrator role is assigned to this account.
-            </p>
-          </div>
-          <Link
-            href="/courses"
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-          >
-            Browse Courses
-          </Link>
-        </div>
-      );
-    }
-
+  if (roleType !== "student") {
     const getDestination = () => {
+      if (roleType === "admin") return { name: "Admin Panel", href: "/admin" };
       if (roleType === "instructor") return { name: "Instructor Studio", href: "/instructor" };
       if (roleType === "content_manager") return { name: "Content Studio", href: "/content" };
       return { name: "Course Catalog", href: "/courses" };
@@ -94,9 +75,9 @@ export default function StudentLayout({
       <div className="flex flex-1 flex-col items-center justify-center p-8 text-center space-y-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <div className="space-y-1.5">
-          <h2 className="text-lg font-bold text-foreground">Redirecting to Staff Workspace...</h2>
+          <h2 className="text-lg font-bold text-foreground">Redirecting to Workspace...</h2>
           <p className="text-xs text-muted-foreground">
-            Opening {dest.name} for your <span className="capitalize">{roleType.replace("_", " ")}</span> account.
+            Opening {dest.name} for your <span className="capitalize">{roleType ? roleType.replace("_", " ") : "account"}</span>.
           </p>
         </div>
       </div>

@@ -28,6 +28,22 @@ export function DashboardStats({
     });
   };
 
+  const getRoleDescription = () => {
+    if (role?.description) return role.description;
+    const type = (role?.type || roleType || "student").toLowerCase();
+    switch (type) {
+      case "admin":
+        return "Full control of the platform. Manages users and assigns/changes their roles.";
+      case "content_manager":
+        return "Creates and manages courses, lessons, and blog posts across the platform.";
+      case "instructor":
+        return "Manages own courses, lessons, quizzes, and student progress.";
+      case "student":
+      default:
+        return "Enrolls in courses, views lessons, takes quizzes, and tracks progress.";
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <Card className="bg-card border-border/80 shadow-sm flex flex-col justify-between">
@@ -42,7 +58,7 @@ export function DashboardStats({
             {role?.name || roleType || "Active"}
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            Enrolls in courses, views lessons, takes quizzes, and tracks their own progress.
+            {getRoleDescription()}
           </p>
         </CardContent>
       </Card>

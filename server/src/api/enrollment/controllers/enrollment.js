@@ -13,7 +13,7 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
     const roleType = user.role?.type || '';
 
     // only students can enroll per the permission matrix
-    if (roleName !== 'Student' && roleType !== 'student' && roleName !== 'Admin' && roleType !== 'admin') {
+    if (roleName !== 'Student' && roleType !== 'student') {
       return ctx.forbidden('Only students can enroll in courses.');
     }
 
@@ -106,7 +106,22 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
       id: { $notNull: true },
     };
 
-    // filter by student
+    /** @type {Record<string, any>} */
+    const customFiltersObj = typeof customFilters === 'object' && customFilters !== null ? customFilters : {};
+
+    const hasCourseFilter = Boolean(
+      existingCourseFilters.documentId ||
+      existingCourseFilters.id ||
+      existingCourseFilters['$eq'] ||
+      existingCourseFilters['$in'] ||
+      typeof customFiltersObj.course === 'string' ||
+      typeof customFiltersObj.course === 'number'
+    );
+
+    const isAllRequested = ctx.query?.all === 'true' || filters.all === true || filters.all === 'true';
+    delete filters.all;
+
+    // filter by student / role
     if (roleName === 'Student' || roleType === 'student') {
       filters.student = { id: user.id };
     } else if (roleName === 'Instructor' || roleType === 'instructor') {
@@ -114,6 +129,8 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
         ...filters.course,
         owner: { id: user.id },
       };
+    } else if ((roleName === 'Admin' || roleType === 'admin' || roleName === 'Content Manager' || roleType === 'content_manager') && !isAllRequested && !hasCourseFilter) {
+      filters.student = { id: user.id };
     }
 
     const [enrollments, total] = await Promise.all([
@@ -257,8 +274,15 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
 
     const roleName = user.role?.name || '';
     const roleType = user.role?.type || '';
+    const isAllRequested = ctx.query?.all === 'true' || ctx.query?.all === true;
 
     if ((roleName === 'Student' || roleType === 'student') && enrollment.student?.id !== user.id) {
+      return ctx.forbidden('Access denied.');
+    } else if (
+      (roleName === 'Admin' || roleType === 'admin') &&
+      !isAllRequested &&
+      enrollment.student?.id !== user.id
+    ) {
       return ctx.forbidden('Access denied.');
     }
 

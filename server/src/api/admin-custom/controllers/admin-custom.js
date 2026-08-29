@@ -60,9 +60,29 @@ module.exports = {
       const users = await strapi.query('plugin::users-permissions.user').findMany({
         populate: ['role'],
         select: ['id', 'documentId', 'username', 'email', 'confirmed', 'blocked', 'createdAt'],
+        orderBy: { createdAt: 'desc' },
       });
 
-      return ctx.send(users);
+      const sanitizedUsers = (users || []).map((u) => ({
+        id: u.id,
+        documentId: u.documentId,
+        username: u.username,
+        email: u.email,
+        confirmed: u.confirmed,
+        blocked: u.blocked,
+        createdAt: u.createdAt,
+        role: u.role
+          ? {
+              id: u.role.id,
+              documentId: u.role.documentId,
+              name: u.role.name,
+              description: u.role.description,
+              type: u.role.type,
+            }
+          : null,
+      }));
+
+      return ctx.send(sanitizedUsers);
     } catch (error) {
       strapi.log.error('[AdminCustomController] getUsers error:', error);
       return ctx.internalServerError('Failed to fetch users.');
@@ -81,7 +101,17 @@ module.exports = {
     }
 
     try {
-      // find role
+      // find target user
+      const targetUser = await strapi.query('plugin::users-permissions.user').findOne({
+        where: { $or: [{ id }, { documentId: id }] },
+        populate: ['role'],
+      });
+
+      if (!targetUser) {
+        return ctx.notFound('Target user not found.');
+      }
+
+      // find target role
       let targetRole = null;
       if (roleId) {
         targetRole = await strapi.query('plugin::users-permissions.role').findOne({
@@ -101,9 +131,14 @@ module.exports = {
         return ctx.notFound('Target role not found.');
       }
 
+      // Safeguard: Prevent admin from demoting their own currently logged-in account
+      if (targetUser.id === user.id && targetRole.type !== 'admin') {
+        return ctx.badRequest('You cannot demote your own administrator account. Please have another administrator perform this action.');
+      }
+
       // update user
       const updatedUser = await strapi.query('plugin::users-permissions.user').update({
-        where: { id },
+        where: { id: targetUser.id },
         data: {
           role: targetRole.id,
         },
@@ -118,9 +153,18 @@ module.exports = {
         message: 'User role updated successfully.',
         user: {
           id: updatedUser.id,
+          documentId: updatedUser.documentId,
           username: updatedUser.username,
           email: updatedUser.email,
-          role: updatedUser.role,
+          role: updatedUser.role
+            ? {
+                id: updatedUser.role.id,
+                documentId: updatedUser.role.documentId,
+                name: updatedUser.role.name,
+                description: updatedUser.role.description,
+                type: updatedUser.role.type,
+              }
+            : null,
         },
       });
     } catch (error) {
