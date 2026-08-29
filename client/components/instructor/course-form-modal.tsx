@@ -21,7 +21,7 @@ import type { Course } from "@/types/course";
 interface CourseFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (values: CourseFormValues) => Promise<void>;
+  onSubmit: (values: CourseFormValues) => Promise<void> | void;
   course?: Course | null;
   isLoading: boolean;
 }

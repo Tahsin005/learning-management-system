@@ -1,10 +1,7 @@
 "use client";
 
-import { use, useState } from "react";
+import { use } from "react";
 import Link from "next/link";
-import { useAuth } from "@/hooks/use-auth";
-import { useCourseQuery } from "@/hooks/queries/use-course-queries";
-import { useQuizQuery, useSubmitQuizMutation, useMyQuizResultsQuery } from "@/hooks/queries/use-quiz-queries";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Breadcrumb,
@@ -22,7 +19,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { QuizSubmissionResponse, QuizQuestion } from "@/types/course";
+import { useQuizRunner } from "@/hooks/use-quiz-runner";
 
 import { QuizHero } from "@/components/quiz/quiz-hero";
 import { QuizQuestionCard } from "@/components/quiz/quiz-question-card";
@@ -38,91 +35,26 @@ export default function QuizRunnerPage({ params }: QuizRunnerPageProps) {
   const courseDocId = resolvedParams.id;
   const quizDocId = resolvedParams.quizId;
 
-  const { isAuthenticated } = useAuth();
-  const { data: courseData, isLoading: isCourseLoading } = useCourseQuery(courseDocId);
-  const { data: quizData, isLoading: isQuizLoading, isError, error } = useQuizQuery(quizDocId);
-  const { data: myResultsData, isLoading: isResultsLoading } = useMyQuizResultsQuery(1, 100, isAuthenticated);
-  const submitQuizMutation = useSubmitQuizMutation();
+  const {
+    course,
+    quiz,
+    questions,
+    displayedQuestions,
+    activeResult,
+    selectedAnswers,
+    answeredCount,
+    isAllAnswered,
+    progressPct,
+    isLoading,
+    isError,
+    error,
+    handleSelectOption,
+    scrollToQuestion,
+    submitQuiz,
+    isSubmitting,
+  } = useQuizRunner(courseDocId, quizDocId);
 
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
-  const [justSubmittedResult, setJustSubmittedResult] = useState<QuizSubmissionResponse | null>(null);
-
-  const course = courseData?.data;
-  const quiz = quizData?.data;
-  const questions = quiz?.questions || [];
-
-  const existingResultRecord = myResultsData?.data?.find(
-    (r) =>
-      r.quiz?.documentId === quizDocId ||
-      String(r.quiz?.id) === String(quizDocId)
-  );
-
-  const activeResult: QuizSubmissionResponse | null =
-    justSubmittedResult ||
-    (existingResultRecord
-      ? {
-          message: "Assessment completed.",
-          documentId: existingResultRecord.documentId,
-          score: existingResultRecord.score,
-          totalQuestions: existingResultRecord.totalQuestions,
-          percentage:
-            existingResultRecord.totalQuestions > 0
-              ? Math.round((existingResultRecord.score / existingResultRecord.totalQuestions) * 100)
-              : 0,
-          answers: existingResultRecord.answers || [],
-          submittedAt: existingResultRecord.submittedAt,
-        }
-      : null);
-
-  const displayedQuestions: QuizQuestion[] = activeResult?.answers && activeResult.answers.length > 0
-    ? activeResult.answers.map((ans, idx) => ({
-        id: idx,
-        questionText: ans.questionText,
-        options: ans.options,
-        correctAnswerIndex: ans.correctAnswerIndex,
-      }))
-    : questions;
-
-  const handleSelectOption = (questionIndex: number, optionIndex: number) => {
-    if (activeResult) return;
-    setSelectedAnswers((prev) => ({
-      ...prev,
-      [questionIndex]: optionIndex,
-    }));
-  };
-
-  const scrollToQuestion = (index: number) => {
-    const el = document.getElementById(`quiz-question-${index}`);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  };
-
-  const handleSubmit = () => {
-    const formattedAnswers = questions.map((_, idx) => ({
-      questionIndex: idx,
-      selectedOptionIndex: selectedAnswers[idx] !== undefined ? selectedAnswers[idx] : -1,
-    }));
-
-    submitQuizMutation.mutate(
-      {
-        quizId: quizDocId,
-        answers: formattedAnswers,
-      },
-      {
-        onSuccess: (data) => {
-          setJustSubmittedResult(data);
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        },
-      }
-    );
-  };
-
-  const answeredCount = Object.keys(selectedAnswers).length;
-  const isAllAnswered = questions.length > 0 && answeredCount === questions.length;
-  const progressPct = questions.length > 0 ? Math.round((answeredCount / questions.length) * 100) : 0;
-
-  if (isCourseLoading || isQuizLoading || isResultsLoading) {
+  if (isLoading) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center space-y-4 py-20">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -242,11 +174,11 @@ export default function QuizRunnerPage({ params }: QuizRunnerPageProps) {
                 </div>
 
                 <Button
-                  onClick={handleSubmit}
-                  disabled={!isAllAnswered || submitQuizMutation.isPending}
+                  onClick={() => submitQuiz()}
+                  disabled={!isAllAnswered || isSubmitting}
                   className="w-full sm:w-auto gap-2 bg-primary text-white shadow-sm font-semibold h-11 px-6"
                 >
-                  {submitQuizMutation.isPending ? (
+                  {isSubmitting ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <span>Grading Assessment...</span>

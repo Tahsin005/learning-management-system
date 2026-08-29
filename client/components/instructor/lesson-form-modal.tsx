@@ -21,7 +21,7 @@ import type { Lesson } from "@/types/course";
 interface LessonFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (values: LessonFormValues) => Promise<void>;
+  onSubmit: (values: LessonFormValues) => Promise<void> | void;
   lesson?: Lesson | null;
   isLoading: boolean;
 }

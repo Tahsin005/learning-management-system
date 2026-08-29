@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { GraduationCap, Loader2, Mail, Send, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { forgotPasswordSchema, type ForgotPasswordFormValues } from "@/lib/validations/auth";
-import { useForgotPasswordMutation } from "@/hooks/queries/use-auth-queries";
+import { useAuth } from "@/hooks/use-auth";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,7 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export default function ForgotPasswordPage() {
-  const forgotPasswordMutation = useForgotPasswordMutation();
+  const { forgotPassword, isRequestingReset, isForgotPasswordSuccess } = useAuth();
 
   const {
     register,
@@ -34,7 +34,7 @@ export default function ForgotPasswordPage() {
   });
 
   const onSubmit = (values: ForgotPasswordFormValues) => {
-    forgotPasswordMutation.mutate(values);
+    forgotPassword(values);
   };
 
   return (
@@ -56,7 +56,7 @@ export default function ForgotPasswordPage() {
         </div>
 
         <Card className="border-border/70 shadow-lg">
-          {forgotPasswordMutation.isSuccess ? (
+          {isForgotPasswordSuccess ? (
             <div className="p-6 text-center space-y-4">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                 <CheckCircle2 className="h-6 w-6" />
@@ -100,7 +100,7 @@ export default function ForgotPasswordPage() {
                       type="email"
                       placeholder="student@example.com"
                       className="pl-9"
-                      disabled={forgotPasswordMutation.isPending}
+                      disabled={isRequestingReset}
                       {...register("email")}
                     />
                   </div>
@@ -114,9 +114,9 @@ export default function ForgotPasswordPage() {
                 <Button
                   type="submit"
                   className="w-full gap-2 shadow-sm"
-                  disabled={forgotPasswordMutation.isPending}
+                  disabled={isRequestingReset}
                 >
-                  {forgotPasswordMutation.isPending ? (
+                  {isRequestingReset ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
                       Sending instructions...

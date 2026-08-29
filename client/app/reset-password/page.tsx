@@ -7,7 +7,7 @@ import { Suspense, useEffect } from "react";
 import Link from "next/link";
 import { GraduationCap, Loader2, KeyRound, Lock, ArrowLeft } from "lucide-react";
 import { resetPasswordSchema, type ResetPasswordFormValues } from "@/lib/validations/auth";
-import { useResetPasswordMutation } from "@/hooks/queries/use-auth-queries";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,7 +22,7 @@ import {
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
-  const resetPasswordMutation = useResetPasswordMutation();
+  const { resetPassword, isResettingPassword } = useAuth();
   const initialCode = searchParams.get("code") || "";
 
   const {
@@ -46,7 +46,7 @@ function ResetPasswordForm() {
   }, [initialCode, setValue]);
 
   const onSubmit = (values: ResetPasswordFormValues) => {
-    resetPasswordMutation.mutate(values);
+    resetPassword(values);
   };
 
   return (
@@ -70,7 +70,7 @@ function ResetPasswordForm() {
                 type="text"
                 placeholder="Paste code from email"
                 className="pl-9 font-mono text-sm"
-                disabled={resetPasswordMutation.isPending}
+                disabled={isResettingPassword}
                 {...register("code")}
               />
             </div>
@@ -90,7 +90,7 @@ function ResetPasswordForm() {
                 type="password"
                 placeholder="At least 6 characters"
                 className="pl-9"
-                disabled={resetPasswordMutation.isPending}
+                disabled={isResettingPassword}
                 {...register("password")}
               />
             </div>
@@ -110,7 +110,7 @@ function ResetPasswordForm() {
                 type="password"
                 placeholder="Re-enter new password"
                 className="pl-9"
-                disabled={resetPasswordMutation.isPending}
+                disabled={isResettingPassword}
                 {...register("passwordConfirmation")}
               />
             </div>
@@ -124,9 +124,9 @@ function ResetPasswordForm() {
           <Button
             type="submit"
             className="w-full gap-2 shadow-sm"
-            disabled={resetPasswordMutation.isPending}
+            disabled={isResettingPassword}
           >
-            {resetPasswordMutation.isPending ? (
+            {isResettingPassword ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Resetting password...

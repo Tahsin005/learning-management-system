@@ -20,7 +20,7 @@ import type { Quiz, QuizQuestion } from "@/types/course";
 interface QuizBuilderModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (title: string, questions: Omit<QuizQuestion, "id">[]) => Promise<void>;
+  onSubmit: (title: string, questions: Omit<QuizQuestion, "id">[]) => Promise<void> | void;
   quiz?: Quiz | null;
   isLoading: boolean;
 }
@@ -44,7 +44,7 @@ function QuizBuilderForm({
   isLoading,
 }: {
   quiz?: Quiz | null;
-  onSubmit: (title: string, questions: Omit<QuizQuestion, "id">[]) => Promise<void>;
+  onSubmit: (title: string, questions: Omit<QuizQuestion, "id">[]) => Promise<void> | void;
   onClose: () => void;
   isLoading: boolean;
 }) {

@@ -2,14 +2,6 @@
 
 import { useState } from "react";
 import { Search, GraduationCap, Loader2 } from "lucide-react";
-import { useAuth } from "@/hooks/use-auth";
-import {
-  useInstructorCoursesQuery,
-  useCreateCourseMutation,
-  useUpdateCourseMutation,
-  useDeleteCourseMutation,
-} from "@/hooks/queries/use-course-queries";
-import { useMyEnrollmentsQuery } from "@/hooks/queries/use-enrollment-queries";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +15,7 @@ import {
 import { PaginationBar } from "@/components/ui/pagination-bar";
 import type { Course } from "@/types/course";
 import type { CourseFormValues } from "@/lib/validations/course";
+import { useInstructorOverview } from "@/hooks/use-instructor-overview";
 
 import { InstructorHeader } from "@/components/instructor/instructor-header";
 import { InstructorStats } from "@/components/instructor/instructor-stats";
@@ -30,69 +23,48 @@ import { InstructorCourseCard } from "@/components/instructor/instructor-course-
 import { CourseFormModal } from "@/components/instructor/course-form-modal";
 
 export default function InstructorOverviewPage() {
-  const { user, role, roleType, isAuthenticated } = useAuth();
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [activeSearch, setActiveSearch] = useState("");
-
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [deletingCourse, setDeletingCourse] = useState<Course | null>(null);
 
-  const { data: coursesData, isLoading: isCoursesLoading } = useInstructorCoursesQuery(
-    user?.id,
-    { page, pageSize: 6, search: activeSearch },
-    isAuthenticated
-  );
+  const {
+    user,
+    role,
+    roleType,
+    courses,
+    pagination,
+    totalCourses,
+    totalEnrollments,
+    completedEnrollments,
+    totalQuizzes,
+    isLoading,
+    page,
+    setPage,
+    search,
+    setSearch,
+    activeSearch,
+    handleSearchSubmit,
+    getCourseEnrollmentCount,
+    createCourse,
+    updateCourse,
+    deleteCourse,
+    isCreatingCourse,
+    isUpdatingCourse,
+    isDeletingCourse,
+  } = useInstructorOverview();
 
-  const { data: enrollmentsData } = useMyEnrollmentsQuery(1, 100, isAuthenticated);
-
-  const createCourseMutation = useCreateCourseMutation();
-  const updateCourseMutation = useUpdateCourseMutation();
-  const deleteCourseMutation = useDeleteCourseMutation();
-
-  const courses = coursesData?.data || [];
-  const pagination = coursesData?.meta?.pagination || {
-    page: 1,
-    pageSize: 6,
-    pageCount: 1,
-    total: 0,
+  const handleCreateCourse = (values: CourseFormValues) => {
+    createCourse(values, () => setIsCreateModalOpen(false));
   };
 
-  const enrollments = enrollmentsData?.data || [];
-  const completedEnrollmentsCount = enrollments.filter((e) => e.isCompleted).length;
-  const totalQuizzesCount = courses.reduce((acc, c) => acc + (c.quizzes?.length || 0), 0);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setActiveSearch(search);
-    setPage(1);
-  };
-
-  const handleCreateCourse = async (values: CourseFormValues) => {
-    await createCourseMutation.mutateAsync(values);
-  };
-
-  const handleUpdateCourse = async (values: CourseFormValues) => {
+  const handleUpdateCourse = (values: CourseFormValues) => {
     if (!editingCourse) return;
-    await updateCourseMutation.mutateAsync({
-      documentId: String(editingCourse.documentId || editingCourse.id),
-      data: values,
-    });
+    updateCourse(String(editingCourse.documentId || editingCourse.id), values, () => setEditingCourse(null));
   };
 
-  const handleDeleteCourse = async () => {
+  const handleDeleteCourse = () => {
     if (!deletingCourse) return;
-    await deleteCourseMutation.mutateAsync(String(deletingCourse.documentId || deletingCourse.id));
-    setDeletingCourse(null);
-  };
-
-  const getCourseEnrollmentCount = (courseId: string | number) => {
-    return enrollments.filter(
-      (e) =>
-        e.course?.documentId === String(courseId) ||
-        String(e.course?.id) === String(courseId)
-    ).length;
+    deleteCourse(String(deletingCourse.documentId || deletingCourse.id), () => setDeletingCourse(null));
   };
 
   return (
@@ -106,10 +78,10 @@ export default function InstructorOverviewPage() {
         />
 
         <InstructorStats
-          totalCourses={pagination.total}
-          totalEnrollments={enrollments.length}
-          completedEnrollments={completedEnrollmentsCount}
-          totalQuizzes={totalQuizzesCount}
+          totalCourses={totalCourses}
+          totalEnrollments={totalEnrollments}
+          completedEnrollments={completedEnrollments}
+          totalQuizzes={totalQuizzes}
         />
 
         <div className="space-y-6">
@@ -140,7 +112,7 @@ export default function InstructorOverviewPage() {
             </form>
           </div>
 
-          {isCoursesLoading ? (
+          {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="h-56 rounded-2xl bg-card border border-border/60 animate-pulse" />
@@ -193,7 +165,7 @@ export default function InstructorOverviewPage() {
                 total={pagination.total}
                 itemLabel="Authored Courses"
                 onPageChange={setPage}
-                isLoading={isCoursesLoading}
+                isLoading={isLoading}
               />
             </div>
           )}
@@ -204,7 +176,7 @@ export default function InstructorOverviewPage() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreateCourse}
-        isLoading={createCourseMutation.isPending}
+        isLoading={isCreatingCourse}
       />
 
       <CourseFormModal
@@ -212,7 +184,7 @@ export default function InstructorOverviewPage() {
         onClose={() => setEditingCourse(null)}
         onSubmit={handleUpdateCourse}
         course={editingCourse}
-        isLoading={updateCourseMutation.isPending}
+        isLoading={isUpdatingCourse}
       />
 
       <Dialog
@@ -233,7 +205,7 @@ export default function InstructorOverviewPage() {
               variant="outline"
               size="sm"
               onClick={() => setDeletingCourse(null)}
-              disabled={deleteCourseMutation.isPending}
+              disabled={isDeletingCourse}
             >
               Cancel
             </Button>
@@ -241,10 +213,10 @@ export default function InstructorOverviewPage() {
               variant="destructive"
               size="sm"
               onClick={handleDeleteCourse}
-              disabled={deleteCourseMutation.isPending}
+              disabled={isDeletingCourse}
               className="gap-1.5"
             >
-              {deleteCourseMutation.isPending ? (
+              {isDeletingCourse ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span>Deleting...</span>
