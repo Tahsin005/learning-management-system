@@ -68,10 +68,11 @@ module.exports = (plugin) => {
   // override 'findOne'
   plugin.controllers.user.findOne = async (ctx) => {
     const { id } = ctx.params;
+    const isNumeric = !isNaN(Number(id));
     const user = await strapi.db.query('plugin::users-permissions.user').findOne({
-      where: {
-        $or: [{ id }, { documentId: id }],
-      },
+      where: isNumeric
+        ? { $or: [{ id: Number(id) }, { documentId: String(id) }] }
+        : { documentId: String(id) },
       populate: ['role'],
     });
 
@@ -97,10 +98,11 @@ module.exports = (plugin) => {
     const { id } = ctx.params;
     const { email, username, password, role, ...rest } = ctx.request.body || {};
 
+    const isNumeric = !isNaN(Number(id));
     const existing = await strapi.db.query('plugin::users-permissions.user').findOne({
-      where: {
-        $or: [{ id }, { documentId: id }],
-      },
+      where: isNumeric
+        ? { $or: [{ id: Number(id) }, { documentId: String(id) }] }
+        : { documentId: String(id) },
     });
 
     if (!existing) {

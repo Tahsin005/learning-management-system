@@ -102,8 +102,11 @@ module.exports = {
 
     try {
       // find target user
-      const targetUser = await strapi.query('plugin::users-permissions.user').findOne({
-        where: { $or: [{ id }, { documentId: id }] },
+      const isNumeric = !isNaN(Number(id));
+      const targetUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+        where: isNumeric
+          ? { $or: [{ id: Number(id) }, { documentId: String(id) }] }
+          : { documentId: String(id) },
         populate: ['role'],
       });
 

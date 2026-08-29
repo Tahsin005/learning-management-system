@@ -248,9 +248,9 @@ module.exports = createCoreController('api::quiz-result.quiz-result', ({ strapi 
       },
     });
 
-    if (!result) {
+    if (!result && !isNaN(Number(id))) {
       result = await strapi.db.query('api::quiz-result.quiz-result').findOne({
-        where: { id },
+        where: { id: Number(id) },
         populate: {
           quiz: {
             populate: {

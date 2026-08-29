@@ -184,9 +184,9 @@ module.exports = createCoreController('api::lesson-progress.lesson-progress', ({
       populate: ['lesson', 'student'],
     });
 
-    if (!progress) {
+    if (!progress && !isNaN(Number(id))) {
       progress = await strapi.db.query('api::lesson-progress.lesson-progress').findOne({
-        where: { id },
+        where: { id: Number(id) },
         populate: ['lesson', 'student'],
       });
     }

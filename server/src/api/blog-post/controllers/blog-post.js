@@ -223,21 +223,21 @@ module.exports = createCoreController('api::blog-post.blog-post', ({ strapi }) =
 
     if (response?.data) {
       const docId = response.data.documentId || id;
+      const isNumeric = !isNaN(Number(docId));
 
       if (isStaff) {
         const dbRecord = await strapi.db.query('api::blog-post.blog-post').findOne({
-          where: {
-            $or: [{ documentId: docId }, { id: docId }],
-            publishedAt: { $notNull: true },
-          },
+          where: isNumeric
+            ? { $or: [{ documentId: String(docId) }, { id: Number(docId) }], publishedAt: { $notNull: true } }
+            : { documentId: String(docId), publishedAt: { $notNull: true } },
         });
         response.data.publishedAt = dbRecord?.publishedAt || null;
       }
 
       const postWithAuthor = await strapi.db.query('api::blog-post.blog-post').findOne({
-        where: {
-          $or: [{ documentId: docId }, { id: docId }],
-        },
+        where: isNumeric
+          ? { $or: [{ documentId: String(docId) }, { id: Number(docId) }] }
+          : { documentId: String(docId) },
         populate: ['author'],
       });
 

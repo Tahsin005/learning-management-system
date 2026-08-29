@@ -256,9 +256,9 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
       },
     });
 
-    if (!enrollment) {
+    if (!enrollment && !isNaN(Number(id))) {
       enrollment = await strapi.db.query('api::enrollment.enrollment').findOne({
-        where: { id },
+        where: { id: Number(id) },
         populate: {
           course: {
             populate: ['lessons', 'quizzes'],
