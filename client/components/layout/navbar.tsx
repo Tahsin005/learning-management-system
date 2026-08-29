@@ -2,7 +2,16 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { GraduationCap, LogOut, LayoutDashboard, ChevronDown, BookOpen } from "lucide-react";
+import {
+  GraduationCap,
+  LogOut,
+  LayoutDashboard,
+  ChevronDown,
+  BookOpen,
+  Briefcase,
+  ShieldCheck,
+  FileEdit,
+} from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -68,6 +77,11 @@ export function Navbar() {
     }
 
     if (isAuthenticated && user) {
+      const isStudent = roleType === "student";
+      const isInstructor = roleType === "instructor";
+      const isContentManager = roleType === "content_manager";
+      const isAdmin = roleType === "admin";
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger className="group flex items-center gap-2 rounded-full border border-border/80 bg-card/90 py-1 pl-2.5 pr-1.5 shadow-sm hover:border-primary/50 hover:bg-card transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -93,13 +107,46 @@ export function Navbar() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem
-                onClick={() => router.push("/dashboard")}
-                className="cursor-pointer gap-2"
-              >
-                <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
-                <span>Dashboard</span>
-              </DropdownMenuItem>
+              {(isStudent || isAdmin) && (
+                <DropdownMenuItem
+                  onClick={() => router.push("/dashboard")}
+                  className="cursor-pointer gap-2"
+                >
+                  <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
+                  <span>Student Dashboard</span>
+                </DropdownMenuItem>
+              )}
+
+              {(isInstructor || isAdmin) && (
+                <DropdownMenuItem
+                  onClick={() => router.push("/instructor")}
+                  className="cursor-pointer gap-2"
+                >
+                  <Briefcase className="h-4 w-4 text-emerald-400" />
+                  <span>Instructor Studio</span>
+                </DropdownMenuItem>
+              )}
+
+              {(isContentManager || isAdmin) && (
+                <DropdownMenuItem
+                  onClick={() => router.push("/content")}
+                  className="cursor-pointer gap-2"
+                >
+                  <FileEdit className="h-4 w-4 text-indigo-400" />
+                  <span>Content Studio</span>
+                </DropdownMenuItem>
+              )}
+
+              {isAdmin && (
+                <DropdownMenuItem
+                  onClick={() => router.push("/admin")}
+                  className="cursor-pointer gap-2"
+                >
+                  <ShieldCheck className="h-4 w-4 text-amber-400" />
+                  <span>Admin Panel</span>
+                </DropdownMenuItem>
+              )}
+
               <DropdownMenuItem
                 onClick={() => router.push("/courses")}
                 className="cursor-pointer gap-2"
@@ -158,6 +205,30 @@ export function Navbar() {
             <Link href="/courses" className="hover:text-foreground transition-colors">
               Courses
             </Link>
+
+            {isAuthenticated && (roleType === "student" || roleType === "admin") && (
+              <Link href="/dashboard" className="hover:text-foreground transition-colors">
+                Dashboard
+              </Link>
+            )}
+
+            {isAuthenticated && (roleType === "instructor" || roleType === "admin") && (
+              <Link href="/instructor" className="hover:text-foreground transition-colors text-emerald-400">
+                Instructor Studio
+              </Link>
+            )}
+
+            {isAuthenticated && (roleType === "content_manager" || roleType === "admin") && (
+              <Link href="/content" className="hover:text-foreground transition-colors text-indigo-400">
+                Content Studio
+              </Link>
+            )}
+
+            {isAuthenticated && roleType === "admin" && (
+              <Link href="/admin" className="hover:text-foreground transition-colors text-amber-400">
+                Admin Panel
+              </Link>
+            )}
           </nav>
         </div>
 

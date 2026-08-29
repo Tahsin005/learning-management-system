@@ -1,16 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { Loader2, GraduationCap, KeyRound, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { useAuth } from "@/hooks/use-auth";
-import { useMyEnrollmentsQuery } from "@/hooks/queries/use-enrollment-queries";
-import { useMyQuizResultsQuery } from "@/hooks/queries/use-quiz-queries";
-import type { QuizResultRecord } from "@/types/course";
-import type { ChangePasswordFormValues } from "@/lib/validations/auth";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useStudentDashboard } from "@/hooks/use-student-dashboard";
 
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
@@ -20,53 +15,29 @@ import { QuizResultModal } from "@/components/dashboard/quiz-result-modal";
 import { AccountProfileCard } from "@/components/dashboard/account-profile-card";
 import { SecurityTab } from "@/components/dashboard/security-tab";
 
-export default function DashboardPage() {
+export default function StudentDashboardPage() {
   const {
     user,
     role,
     roleType,
-    isAuthenticated,
+    isLoggingOut,
+    activeTab,
+    setActiveTab,
+    coursesPage,
+    setCoursesPage,
+    quizzesPage,
+    setQuizzesPage,
+    selectedQuizResult,
+    setSelectedQuizResult,
+    enrollments,
+    enrollmentsPagination,
+    isEnrollmentsLoading,
+    quizResults,
+    quizPagination,
+    isQuizResultsLoading,
     changePassword,
     isChangingPassword,
-    isLoggingOut,
-  } = useAuth();
-
-  const [activeTab, setActiveTab] = useState<"overview" | "courses" | "quizzes" | "security">("overview");
-  const [coursesPage, setCoursesPage] = useState(1);
-  const [quizzesPage, setQuizzesPage] = useState(1);
-  const [selectedQuizResult, setSelectedQuizResult] = useState<QuizResultRecord | null>(null);
-
-  const { data: enrollmentsData, isLoading: isEnrollmentsLoading } = useMyEnrollmentsQuery(
-    coursesPage,
-    3,
-    isAuthenticated
-  );
-
-  const { data: quizResultsData, isLoading: isQuizResultsLoading } = useMyQuizResultsQuery(
-    quizzesPage,
-    5,
-    isAuthenticated
-  );
-
-  const enrollments = enrollmentsData?.data || [];
-  const enrollmentsPagination = enrollmentsData?.meta?.pagination || {
-    page: 1,
-    pageSize: 3,
-    pageCount: 1,
-    total: 0,
-  };
-
-  const quizResults = quizResultsData?.data || [];
-  const quizPagination = quizResultsData?.meta?.pagination || {
-    page: 1,
-    pageSize: 5,
-    pageCount: 1,
-    total: 0,
-  };
-
-  const handleChangePassword = async (values: ChangePasswordFormValues) => {
-    await changePassword(values);
-  };
+  } = useStudentDashboard();
 
   if (!user && !isLoggingOut) {
     return (
@@ -231,7 +202,7 @@ export default function DashboardPage() {
 
         {activeTab === "security" && (
           <SecurityTab
-            onChangePassword={handleChangePassword}
+            onChangePassword={changePassword}
             isChangingPassword={isChangingPassword}
           />
         )}

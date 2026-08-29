@@ -98,11 +98,22 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
     /** @type {Record<string, any>} */
     const filters = typeof customFilters === 'object' && customFilters !== null ? { ...customFilters } : {};
 
+    // filter out any records with null courses at the DB query level
+    const existingCourseFilters =
+      typeof filters.course === 'object' && filters.course !== null ? filters.course : {};
+    filters.course = {
+      ...existingCourseFilters,
+      id: { $notNull: true },
+    };
+
     // filter by student
     if (roleName === 'Student' || roleType === 'student') {
       filters.student = { id: user.id };
     } else if (roleName === 'Instructor' || roleType === 'instructor') {
-      filters.course = { owner: { id: user.id } };
+      filters.course = {
+        ...filters.course,
+        owner: { id: user.id },
+      };
     }
 
     const [enrollments, total] = await Promise.all([

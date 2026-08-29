@@ -25,13 +25,17 @@ export const enrollmentsApi = {
   /**
    * List all enrollments for the currently logged-in user
    */
-  async getMyEnrollments(page = 1, pageSize = 25): Promise<StrapiListResponse<Enrollment>> {
+  async getMyEnrollments(page = 1, pageSize = 25, courseDocId?: string): Promise<StrapiListResponse<Enrollment>> {
     const query = new URLSearchParams({
       "pagination[page]": String(page),
       "pagination[pageSize]": String(pageSize),
       populate: "*",
       sort: "createdAt:desc",
     });
+
+    if (courseDocId) {
+      query.set("filters[course][documentId][$eq]", courseDocId);
+    }
 
     return apiClient.get<StrapiListResponse<Enrollment>>(`/api/enrollments?${query.toString()}`);
   },

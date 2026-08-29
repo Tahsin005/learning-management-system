@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { GraduationCap, Loader2, LogIn, Lock, Mail, ArrowRight } from "lucide-react";
 import { loginSchema, type LoginFormValues } from "@/lib/validations/auth";
-import { useLoginMutation } from "@/hooks/queries/use-auth-queries";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/card";
 
 export default function LoginPage() {
-  const loginMutation = useLoginMutation();
+  const { login, isLoggingIn } = useAuth();
 
   const {
     register,
@@ -34,7 +34,7 @@ export default function LoginPage() {
   });
 
   const onSubmit = (values: LoginFormValues) => {
-    loginMutation.mutate(values);
+    login(values);
   };
 
   return (
@@ -75,7 +75,7 @@ export default function LoginPage() {
                     type="text"
                     placeholder="student@lms.local or username"
                     className="pl-9"
-                    disabled={loginMutation.isPending}
+                    disabled={isLoggingIn}
                     {...register("identifier")}
                   />
                 </div>
@@ -103,7 +103,7 @@ export default function LoginPage() {
                     type="password"
                     placeholder="••••••••"
                     className="pl-9"
-                    disabled={loginMutation.isPending}
+                    disabled={isLoggingIn}
                     {...register("password")}
                   />
                 </div>
@@ -117,9 +117,9 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 className="w-full gap-2 shadow-sm"
-                disabled={loginMutation.isPending}
+                disabled={isLoggingIn}
               >
-                {loginMutation.isPending ? (
+                {isLoggingIn ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Signing in...

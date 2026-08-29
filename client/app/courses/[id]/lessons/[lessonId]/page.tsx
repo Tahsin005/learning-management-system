@@ -2,12 +2,6 @@
 
 import { use } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/use-auth";
-import { useCourseQuery, useCourseProgressQuery } from "@/hooks/queries/use-course-queries";
-import { useLessonQuery, useUpdateLessonProgressMutation } from "@/hooks/queries/use-lesson-queries";
-import { useEnrollMutation } from "@/hooks/queries/use-enrollment-queries";
-import { useMyQuizResultsQuery } from "@/hooks/queries/use-quiz-queries";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -26,6 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Markdown } from "@/components/ui/markdown";
+import { useLessonPlayer } from "@/hooks/use-lesson-player";
 
 import { LessonVideoPlayer } from "@/components/lessons/lesson-video-player";
 import { LessonNavigation } from "@/components/lessons/lesson-navigation";
@@ -39,47 +34,30 @@ export default function LessonPlayerPage({ params }: LessonPlayerPageProps) {
   const resolvedParams = use(params);
   const courseDocId = resolvedParams.id;
   const lessonDocId = resolvedParams.lessonId;
-  const router = useRouter();
 
-  const { isAuthenticated } = useAuth();
-  const { data: courseData, isLoading: isCourseLoading } = useCourseQuery(courseDocId);
-  const { data: lessonData, isLoading: isLessonLoading, isError: isLessonError } = useLessonQuery(lessonDocId);
-  const { data: progressData } = useCourseProgressQuery(courseDocId, isAuthenticated);
-  const { data: myQuizResultsData } = useMyQuizResultsQuery(1, 100, isAuthenticated);
-  const updateProgressMutation = useUpdateLessonProgressMutation(courseDocId);
-  const enrollMutation = useEnrollMutation();
+  const {
+    course,
+    lesson,
+    lessons,
+    quizzes,
+    completedLessonIds,
+    isCurrentCompleted,
+    currentIndex,
+    prevLesson,
+    nextLesson,
+    firstQuiz,
+    firstQuizResult,
+    myQuizResults,
+    isAuthenticated,
+    isLoading,
+    isLessonError,
+    toggleComplete,
+    enroll,
+    isUpdatingProgress,
+    isEnrolling,
+  } = useLessonPlayer(courseDocId, lessonDocId);
 
-  const course = courseData?.data;
-  const lesson = lessonData?.data;
-  const lessons = course?.lessons || [];
-  const quizzes = course?.quizzes || [];
-
-  const completedLessonIds = (progressData?.completedLessonIds || []).map(String);
-  const isCurrentCompleted = completedLessonIds.includes(String(lesson?.documentId || lessonDocId));
-
-  const currentIndex = lessons.findIndex(
-    (l) => String(l.documentId || l.id) === String(lessonDocId)
-  );
-  const prevLesson = currentIndex > 0 ? lessons[currentIndex - 1] : null;
-  const nextLesson = currentIndex >= 0 && currentIndex < lessons.length - 1 ? lessons[currentIndex + 1] : null;
-  const firstQuiz = quizzes[0];
-
-  const handleToggleComplete = () => {
-    updateProgressMutation.mutate({
-      lessonDocId,
-      completed: !isCurrentCompleted,
-    });
-  };
-
-  const handleEnroll = () => {
-    if (!isAuthenticated) {
-      router.push(`/login?redirect=/courses/${courseDocId}/lessons/${lessonDocId}`);
-      return;
-    }
-    enrollMutation.mutate(courseDocId);
-  };
-
-  if (isCourseLoading || isLessonLoading) {
+  if (isLoading) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center space-y-4 py-20">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -104,8 +82,8 @@ export default function LessonPlayerPage({ params }: LessonPlayerPageProps) {
             </p>
             <div className="pt-4 flex flex-col sm:flex-row w-full gap-3">
               <Button
-                onClick={handleEnroll}
-                disabled={enrollMutation.isPending}
+                onClick={() => enroll()}
+                disabled={isEnrolling}
                 className="flex-1 gap-2 bg-primary text-white"
               >
                 <GraduationCap className="h-4 w-4" />
@@ -123,14 +101,6 @@ export default function LessonPlayerPage({ params }: LessonPlayerPageProps) {
       </main>
     );
   }
-
-  const firstQuizResult = firstQuiz
-    ? myQuizResultsData?.data?.find(
-        (r) =>
-          r.quiz?.documentId === String(firstQuiz.documentId || firstQuiz.id) ||
-          String(r.quiz?.id) === String(firstQuiz.documentId || firstQuiz.id)
-      )
-    : null;
 
   return (
     <div className="flex flex-1 flex-col bg-background text-foreground selection:bg-primary/20 selection:text-primary">
@@ -198,8 +168,8 @@ export default function LessonPlayerPage({ params }: LessonPlayerPageProps) {
                 firstQuiz={firstQuiz}
                 firstQuizResult={firstQuizResult}
                 isCurrentCompleted={isCurrentCompleted}
-                isUpdatingProgress={updateProgressMutation.isPending}
-                onToggleComplete={handleToggleComplete}
+                isUpdatingProgress={isUpdatingProgress}
+                onToggleComplete={() => toggleComplete()}
               />
             </div>
           </div>
@@ -211,7 +181,7 @@ export default function LessonPlayerPage({ params }: LessonPlayerPageProps) {
               lessons={lessons}
               quizzes={quizzes}
               completedLessonIds={completedLessonIds}
-              quizResults={myQuizResultsData?.data || []}
+              quizResults={myQuizResults}
             />
           </div>
         </div>

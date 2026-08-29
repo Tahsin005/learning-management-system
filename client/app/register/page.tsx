@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { GraduationCap, Loader2, UserPlus, Lock, Mail, User, ArrowLeft } from "lucide-react";
 import { registerSchema, type RegisterFormValues } from "@/lib/validations/auth";
-import { useRegisterMutation } from "@/hooks/queries/use-auth-queries";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/card";
 
 export default function RegisterPage() {
-  const registerMutation = useRegisterMutation();
+  const { register: registerAccount, isRegistering } = useAuth();
 
   const {
     register,
@@ -36,7 +36,7 @@ export default function RegisterPage() {
   });
 
   const onSubmit = (values: RegisterFormValues) => {
-    registerMutation.mutate({
+    registerAccount({
       username: values.username,
       email: values.email,
       password: values.password,
@@ -81,7 +81,7 @@ export default function RegisterPage() {
                     type="text"
                     placeholder="student_alex"
                     className="pl-9"
-                    disabled={registerMutation.isPending}
+                    disabled={isRegistering}
                     {...register("username")}
                   />
                 </div>
@@ -101,7 +101,7 @@ export default function RegisterPage() {
                     type="email"
                     placeholder="student@example.com"
                     className="pl-9"
-                    disabled={registerMutation.isPending}
+                    disabled={isRegistering}
                     {...register("email")}
                   />
                 </div>
@@ -121,7 +121,7 @@ export default function RegisterPage() {
                     type="password"
                     placeholder="At least 6 characters"
                     className="pl-9"
-                    disabled={registerMutation.isPending}
+                    disabled={isRegistering}
                     {...register("password")}
                   />
                 </div>
@@ -141,7 +141,7 @@ export default function RegisterPage() {
                     type="password"
                     placeholder="Re-enter your password"
                     className="pl-9"
-                    disabled={registerMutation.isPending}
+                    disabled={isRegistering}
                     {...register("passwordConfirmation")}
                   />
                 </div>
@@ -155,9 +155,9 @@ export default function RegisterPage() {
               <Button
                 type="submit"
                 className="w-full gap-2 shadow-sm"
-                disabled={registerMutation.isPending}
+                disabled={isRegistering}
               >
-                {registerMutation.isPending ? (
+                {isRegistering ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Creating account...

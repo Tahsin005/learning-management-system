@@ -2,11 +2,6 @@
 
 import { use } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/use-auth";
-import { useCourseQuery, useCourseProgressQuery } from "@/hooks/queries/use-course-queries";
-import { useMyEnrollmentsQuery, useEnrollMutation } from "@/hooks/queries/use-enrollment-queries";
-import { useMyQuizResultsQuery } from "@/hooks/queries/use-quiz-queries";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Breadcrumb,
@@ -18,6 +13,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCourseDetails } from "@/hooks/use-course-details";
 
 import { CourseHero } from "@/components/courses/course-hero";
 import { CurriculumList } from "@/components/courses/curriculum-list";
@@ -30,44 +26,25 @@ interface CourseDetailPageProps {
 export default function CourseDetailPage({ params }: CourseDetailPageProps) {
   const resolvedParams = use(params);
   const courseDocId = resolvedParams.id;
-  const router = useRouter();
 
-  const { isAuthenticated } = useAuth();
-  const { data: courseData, isLoading: isCourseLoading, isError, error } = useCourseQuery(courseDocId);
-  const { data: enrollmentsData } = useMyEnrollmentsQuery(1, 100, isAuthenticated);
-  const { data: myQuizResultsData } = useMyQuizResultsQuery(1, 100, isAuthenticated);
-  const enrollMutation = useEnrollMutation();
+  const {
+    course,
+    isEnrolled,
+    lessons,
+    completedLessonIds,
+    completedCount,
+    progressPercent,
+    firstUncompletedLesson,
+    quizResults,
+    isAuthenticated,
+    isLoading,
+    isError,
+    error,
+    enroll,
+    isEnrolling,
+  } = useCourseDetails(courseDocId);
 
-  const course = courseData?.data;
-  const enrollments = enrollmentsData?.data || [];
-
-  const isEnrolled = enrollments.some(
-    (e) =>
-      e.course?.documentId === courseDocId ||
-      String(e.course?.id) === String(courseDocId) ||
-      (course && (e.course?.documentId === course.documentId || e.course?.id === course.id))
-  );
-
-  const { data: progressData } = useCourseProgressQuery(courseDocId, isEnrolled);
-
-  const lessons = course?.lessons || [];
-  const completedLessonIds = (progressData?.completedLessonIds || []).map(String);
-  const completedCount = completedLessonIds.length;
-  const progressPercent = progressData?.progressPercentage || 0;
-
-  const firstUncompletedLesson = lessons.find(
-    (l) => !completedLessonIds.includes(String(l.documentId || l.id))
-  ) || lessons[0];
-
-  const handleEnroll = () => {
-    if (!isAuthenticated) {
-      router.push(`/login?redirect=/courses/${courseDocId}`);
-      return;
-    }
-    enrollMutation.mutate(courseDocId);
-  };
-
-  if (isCourseLoading) {
+  if (isLoading) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center space-y-4 py-20">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -122,8 +99,8 @@ export default function CourseDetailPage({ params }: CourseDetailPageProps) {
           completedCount={completedCount}
           totalLessons={lessons.length}
           firstUncompletedLesson={firstUncompletedLesson}
-          onEnroll={handleEnroll}
-          isEnrolling={enrollMutation.isPending}
+          onEnroll={() => enroll()}
+          isEnrolling={isEnrolling}
           isAuthenticated={isAuthenticated}
         />
 
@@ -133,8 +110,8 @@ export default function CourseDetailPage({ params }: CourseDetailPageProps) {
               course={course}
               isEnrolled={isEnrolled}
               completedLessonIds={completedLessonIds}
-              quizResults={myQuizResultsData?.data || []}
-              onEnroll={handleEnroll}
+              quizResults={quizResults}
+              onEnroll={() => enroll()}
             />
           </div>
 

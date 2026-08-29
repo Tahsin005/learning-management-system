@@ -1,48 +1,29 @@
 "use client";
 
-import { useState } from "react";
-import { useCoursesQuery } from "@/hooks/queries/use-course-queries";
-import { useMyEnrollmentsQuery } from "@/hooks/queries/use-enrollment-queries";
-import { useAuth } from "@/hooks/use-auth";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Search, Sparkles, GraduationCap } from "lucide-react";
 import { CourseCard } from "@/components/courses/course-card";
 import { PaginationBar } from "@/components/ui/pagination-bar";
+import { useCourseCatalog } from "@/hooks/use-course-catalog";
 
 export default function CoursesPage() {
-  const { isAuthenticated } = useAuth();
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [activeSearch, setActiveSearch] = useState("");
-
-  const { data, isLoading, isError, error } = useCoursesQuery({
+  const {
+    courses,
+    pagination,
+    enrolledCourseIds,
+    isLoading,
+    isError,
+    error,
     page,
-    pageSize: 9,
-    search: activeSearch,
-  });
-
-  const { data: enrollmentsData } = useMyEnrollmentsQuery(1, 100, isAuthenticated);
-
-  const courses = data?.data || [];
-  const enrollments = enrollmentsData?.data || [];
-  const enrolledCourseIds = new Set(
-    enrollments.map((e) => e.course?.documentId || String(e.course?.id))
-  );
-
-  const pagination = data?.meta?.pagination || {
-    page: 1,
-    pageSize: 9,
-    pageCount: 1,
-    total: 0,
-  };
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setActiveSearch(search);
-    setPage(1);
-  };
+    setPage,
+    search,
+    setSearch,
+    activeSearch,
+    handleSearchSubmit,
+    clearSearch,
+  } = useCourseCatalog(9);
 
   return (
     <div className="flex flex-1 flex-col bg-background text-foreground selection:bg-primary/20 selection:text-primary">
@@ -109,7 +90,7 @@ export default function CoursesPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setActiveSearch("")}
+              onClick={clearSearch}
             >
               Try Again
             </Button>
@@ -131,10 +112,7 @@ export default function CoursesPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  setSearch("");
-                  setActiveSearch("");
-                }}
+                onClick={clearSearch}
               >
                 Clear Search
               </Button>

@@ -12,6 +12,7 @@ import {
   useResetPasswordMutation,
 } from "@/hooks/queries/use-auth-queries";
 import type { UserRoleType } from "@/types/auth";
+import type { LoginFormValues, RegisterFormValues, ChangePasswordFormValues, ForgotPasswordFormValues, ResetPasswordFormValues } from "@/lib/validations/auth";
 import { getCookie, COOKIE_AUTH_TOKEN } from "@/lib/cookies";
 
 export function useAuth() {
@@ -59,6 +60,42 @@ export function useAuth() {
   const isAuthenticated = !!token && !!user;
   const isLoading = !store.isInitialized || (!!token && !user && meQuery.isLoading);
 
+  const login = (values: LoginFormValues, onSuccess?: () => void) => {
+    loginMutation.mutate(values, {
+      onSuccess: () => onSuccess?.(),
+    });
+  };
+
+  const register = (values: Omit<RegisterFormValues, "passwordConfirmation">, onSuccess?: () => void) => {
+    registerMutation.mutate(values, {
+      onSuccess: () => onSuccess?.(),
+    });
+  };
+
+  const logout = (onSuccess?: () => void) => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => onSuccess?.(),
+    });
+  };
+
+  const changePassword = async (values: ChangePasswordFormValues, onSuccess?: () => void) => {
+    const res = await changePasswordMutation.mutateAsync(values);
+    onSuccess?.();
+    return res;
+  };
+
+  const forgotPassword = (values: ForgotPasswordFormValues, onSuccess?: () => void) => {
+    forgotPasswordMutation.mutate(values, {
+      onSuccess: () => onSuccess?.(),
+    });
+  };
+
+  const resetPassword = (values: ResetPasswordFormValues, onSuccess?: () => void) => {
+    resetPasswordMutation.mutate(values, {
+      onSuccess: () => onSuccess?.(),
+    });
+  };
+
   return {
     user,
     token,
@@ -75,14 +112,21 @@ export function useAuth() {
     isLoading,
     isInitialized: store.isInitialized,
 
-    login: loginMutation.mutateAsync,
-    register: registerMutation.mutateAsync,
-    logout: logoutMutation.mutateAsync,
+    login,
+    register,
+    logout,
     clearAuth: store.clearAuth,
-    changePassword: changePasswordMutation.mutateAsync,
-    forgotPassword: forgotPasswordMutation.mutateAsync,
-    resetPassword: resetPasswordMutation.mutateAsync,
+    changePassword,
+    forgotPassword,
+    resetPassword,
     refetchUser: meQuery.refetch,
+
+    loginAsync: loginMutation.mutateAsync,
+    registerAsync: registerMutation.mutateAsync,
+    logoutAsync: logoutMutation.mutateAsync,
+    changePasswordAsync: changePasswordMutation.mutateAsync,
+    forgotPasswordAsync: forgotPasswordMutation.mutateAsync,
+    resetPasswordAsync: resetPasswordMutation.mutateAsync,
 
     isLoggingIn: loginMutation.isPending,
     isRegistering: registerMutation.isPending,
@@ -90,5 +134,6 @@ export function useAuth() {
     isChangingPassword: changePasswordMutation.isPending,
     isRequestingReset: forgotPasswordMutation.isPending,
     isResettingPassword: resetPasswordMutation.isPending,
+    isForgotPasswordSuccess: forgotPasswordMutation.isSuccess,
   };
 }

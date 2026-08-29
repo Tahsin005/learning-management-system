@@ -3,6 +3,8 @@ import type { NextRequest } from "next/server";
 
 const PUBLIC_PATHS = [
   "/",
+  "/courses",
+  "/blog",
   "/login",
   "/register",
   "/forgot-password",
@@ -22,9 +24,11 @@ export function proxy(request: NextRequest) {
   }
 
   const token = request.cookies.get("auth_token")?.value;
-  const isPublicPath = PUBLIC_PATHS.includes(pathname);
+  const isPublicPath =
+    PUBLIC_PATHS.includes(pathname) ||
+    (pathname.startsWith("/courses/") && !pathname.includes("/lessons/") && !pathname.includes("/quizzes/")) ||
+    pathname.startsWith("/blog/");
 
-  // If unauthenticated user tries to access a protected route (like /dashboard), redirect to login
   if (!token && !isPublicPath) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);

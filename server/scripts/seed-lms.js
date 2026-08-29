@@ -23,79 +23,21 @@ async function seedDatabase() {
     const instructorRole = await getRole('instructor');
     const studentRole = await getRole('student');
 
-    console.log('Found roles:', {
-      admin: adminRole?.id,
-      content_manager: cmRole?.id,
-      instructor: instructorRole?.id,
-      student: studentRole?.id,
-    });
+    if (!adminRole || !cmRole || !instructorRole || !studentRole) {
+      throw new Error(
+        `Required roles missing for seeding. Found: ${JSON.stringify({
+          admin: adminRole?.id,
+          content_manager: cmRole?.id,
+          instructor: instructorRole?.id,
+          student: studentRole?.id,
+        })}`
+      );
+    }
 
-    const upsertUser = async ({ username, email, password, roleId }) => {
-      const existing = await strapi.query('plugin::users-permissions.user').findOne({
-        where: { email: email.toLowerCase() },
-      });
+    console.log('Roles verified successfully.');
 
-      if (existing) {
-        console.log(`Updating existing user: ${email}`);
-        await strapi.plugin('users-permissions').service('user').edit(existing.id, {
-          username,
-          password,
-          role: roleId,
-          confirmed: true,
-          blocked: false,
-        });
-        return strapi.query('plugin::users-permissions.user').findOne({ where: { id: existing.id } });
-      } else {
-        console.log(`Creating new user: ${email}`);
-        return strapi.plugin('users-permissions').service('user').add({
-          username,
-          email: email.toLowerCase(),
-          password,
-          role: roleId,
-          confirmed: true,
-          blocked: false,
-        });
-      }
-    };
-
-    const adminUser = await upsertUser({
-      username: 'tahsin_admin',
-      email: 'tahsin.admin@gmail.com',
-      password: 'Tahsin005',
-      roleId: adminRole.id,
-    });
-
-    const cmUser = await upsertUser({
-      username: 'tahsin_content',
-      email: 'tahsin.con@gmail.com',
-      password: 'Tahsin005',
-      roleId: cmRole.id,
-    });
-
-    const instructor1 = await upsertUser({
-      username: 'tahsin_instructor',
-      email: 'tahsin.ins@gmail.com',
-      password: 'Tahsin005',
-      roleId: instructorRole.id,
-    });
-
-    const instructor2 = await upsertUser({
-      username: 'tahsin_instructor_lead',
-      email: 'tahsin.ins1@gmail.com',
-      password: 'Tahsin005',
-      roleId: instructorRole.id,
-    });
-
-    const studentUser = await upsertUser({
-      username: 'tahsin_student',
-      email: 'tahsin.stu@gmail.com',
-      password: 'Ferdous005',
-      roleId: studentRole.id,
-    });
-
-    console.log('All requested users provisioned successfully.');
-
-    console.log('Cleaning existing courses, lessons, and assessments...');
+    console.log('Purging existing data (quiz results, progresses, enrollments, quizzes, lessons, courses, blogs, users)...');
+    
     const allQuizResults = await strapi.documents('api::quiz-result.quiz-result').findMany({});
     for (const r of allQuizResults) {
       await strapi.documents('api::quiz-result.quiz-result').delete({ documentId: r.documentId });
@@ -126,6 +68,68 @@ async function seedDatabase() {
       await strapi.documents('api::course.course').delete({ documentId: c.documentId });
     }
 
+    try {
+      const allBlogs = await strapi.documents('api::blog-post.blog-post').findMany({});
+      for (const b of allBlogs) {
+        await strapi.documents('api::blog-post.blog-post').delete({ documentId: b.documentId });
+      }
+    } catch {
+      // ignore if blog-post is not yet populated
+    }
+
+    const allUsers = await strapi.query('plugin::users-permissions.user').findMany({});
+    console.log(`Purging ${allUsers.length} existing user records...`);
+    for (const u of allUsers) {
+      await strapi.query('plugin::users-permissions.user').delete({ where: { id: u.id } });
+    }
+
+    const defaultSeedPassword = process.env.SEED_DEFAULT_PASSWORD || 'Tahsin005';
+
+    console.log('Provisioning fresh standard users...');
+    const createUser = async ({ username, email, password = defaultSeedPassword, roleId }) => {
+      console.log(`Creating user: ${username}`);
+      return strapi.plugin('users-permissions').service('user').add({
+        username,
+        email: email.toLowerCase(),
+        password,
+        role: roleId,
+        provider: 'local',
+        confirmed: true,
+        blocked: false,
+      });
+    };
+
+    const adminUser = await createUser({
+      username: 'tahsin_admin',
+      email: 'tahsin.admin@gmail.com',
+      roleId: adminRole.id,
+    });
+
+    const cmUser = await createUser({
+      username: 'tahsin_content',
+      email: 'tahsin.con@gmail.com',
+      roleId: cmRole.id,
+    });
+
+    const instructor1 = await createUser({
+      username: 'tahsin_instructor',
+      email: 'tahsin.ins@gmail.com',
+      roleId: instructorRole.id,
+    });
+
+    const instructor2 = await createUser({
+      username: 'tahsin_instructor_lead',
+      email: 'tahsin.ins1@gmail.com',
+      roleId: instructorRole.id,
+    });
+
+    const studentUser = await createUser({
+      username: 'tahsin_student',
+      email: 'tahsin.stu@gmail.com',
+      roleId: studentRole.id,
+    });
+
+    console.log('All standard users provisioned cleanly.');
     console.log('Seeding production-ready courses with rich markdown and valid video embeds...');
 
     const course1 = await strapi.documents('api::course.course').create({
