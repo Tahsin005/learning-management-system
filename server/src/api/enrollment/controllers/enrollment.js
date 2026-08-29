@@ -102,7 +102,12 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
     if (roleName === 'Student' || roleType === 'student') {
       filters.student = { id: user.id };
     } else if (roleName === 'Instructor' || roleType === 'instructor') {
-      filters.course = { owner: { id: user.id } };
+      const existingCourseFilters =
+        typeof filters.course === 'object' && filters.course !== null ? filters.course : {};
+      filters.course = {
+        ...existingCourseFilters,
+        owner: { id: user.id },
+      };
     }
 
     const [enrollments, total] = await Promise.all([
@@ -121,8 +126,10 @@ module.exports = createCoreController('api::enrollment.enrollment', ({ strapi })
       strapi.documents('api::enrollment.enrollment').count({ filters }),
     ]);
 
+    const activeEnrollments = enrollments.filter((e) => e.course !== null && e.course !== undefined);
+
     const sanitizedEnrollments = await Promise.all(
-      enrollments.map(async (e) => {
+      activeEnrollments.map(async (e) => {
         const studentId = e.student?.id || user.id;
         const lessons = e.course?.lessons || [];
         const quizzes = e.course?.quizzes || [];

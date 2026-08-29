@@ -147,12 +147,32 @@ module.exports = createCoreController('api::quiz-result.quiz-result', ({ strapi 
     // if student, strictly filter to student's own results
     if (roleName === 'Student' || roleType === 'student') {
       filters.student = { id: user.id };
+    } else if (roleName === 'Instructor' || roleType === 'instructor') {
+      const existingQuizFilters =
+        typeof filters.quiz === 'object' && filters.quiz !== null ? filters.quiz : {};
+      const existingCourseFilters =
+        typeof existingQuizFilters.course === 'object' && existingQuizFilters.course !== null
+          ? existingQuizFilters.course
+          : {};
+
+      filters.quiz = {
+        ...existingQuizFilters,
+        course: {
+          ...existingCourseFilters,
+          owner: { id: user.id },
+        },
+      };
     }
 
     const [results, total] = await Promise.all([
       strapi.documents('api::quiz-result.quiz-result').findMany({
         filters,
-        populate: ['quiz', 'student'],
+        populate: {
+          quiz: {
+            populate: ['course'],
+          },
+          student: true,
+        },
         sort: /** @type {any} */ (sort) || { createdAt: 'desc' },
         start,
         limit,
@@ -175,6 +195,13 @@ module.exports = createCoreController('api::quiz-result.quiz-result', ({ strapi 
             id: r.quiz.id,
             documentId: r.quiz.documentId,
             title: r.quiz.title,
+            course: r.quiz.course
+              ? {
+                  id: r.quiz.course.id,
+                  documentId: r.quiz.course.documentId,
+                  title: r.quiz.course.title,
+                }
+              : null,
           }
         : null,
       student: r.student
@@ -209,13 +236,23 @@ module.exports = createCoreController('api::quiz-result.quiz-result', ({ strapi 
     const { id } = ctx.params;
     let result = await strapi.documents('api::quiz-result.quiz-result').findOne({
       documentId: id,
-      populate: ['quiz', 'student'],
+      populate: {
+        quiz: {
+          populate: ['course.owner'],
+        },
+        student: true,
+      },
     });
 
     if (!result) {
       result = await strapi.db.query('api::quiz-result.quiz-result').findOne({
         where: { id },
-        populate: ['quiz', 'student'],
+        populate: {
+          quiz: {
+            populate: ['course.owner'],
+          },
+          student: true,
+        },
       });
     }
 
@@ -228,6 +265,13 @@ module.exports = createCoreController('api::quiz-result.quiz-result', ({ strapi 
 
     if ((roleName === 'Student' || roleType === 'student') && result.student?.id !== user.id) {
       return ctx.forbidden('Access denied.');
+    }
+
+    if (
+      (roleName === 'Instructor' || roleType === 'instructor') &&
+      result.quiz?.course?.owner?.id !== user.id
+    ) {
+      return ctx.forbidden('Access denied. You can only view quiz results for courses you own.');
     }
 
     return ctx.send({
@@ -246,6 +290,13 @@ module.exports = createCoreController('api::quiz-result.quiz-result', ({ strapi 
               id: result.quiz.id,
               documentId: result.quiz.documentId,
               title: result.quiz.title,
+              course: result.quiz.course
+                ? {
+                    id: result.quiz.course.id,
+                    documentId: result.quiz.course.documentId,
+                    title: result.quiz.course.title,
+                  }
+                : null,
             }
           : null,
         student: result.student

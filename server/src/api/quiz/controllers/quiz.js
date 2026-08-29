@@ -92,6 +92,19 @@ module.exports = createCoreController('api::quiz.quiz', ({ strapi }) => ({
       return ctx.forbidden('You do not have permission to update this quiz.');
     }
 
+    const quizDocId = quiz.documentId || quiz.id;
+    const payload = ctx.request.body?.data || ctx.request.body || {};
+
+    // If instructor modified the questions/answer keys, reset obsolete past submissions for this quiz
+    if (payload.questions && Array.isArray(payload.questions)) {
+      const oldResults = await strapi.documents('api::quiz-result.quiz-result').findMany({
+        filters: { quiz: { documentId: quizDocId } },
+      });
+      for (const r of oldResults) {
+        await strapi.documents('api::quiz-result.quiz-result').delete({ documentId: r.documentId });
+      }
+    }
+
     return super.update(ctx);
   },
 
@@ -127,7 +140,22 @@ module.exports = createCoreController('api::quiz.quiz', ({ strapi }) => ({
       return ctx.forbidden('You do not have permission to delete this quiz.');
     }
 
-    return super.delete(ctx);
+    const quizDocId = quiz.documentId || quiz.id;
+
+    // Cascade delete associated quiz result records
+    const results = await strapi.documents('api::quiz-result.quiz-result').findMany({
+      filters: { quiz: { documentId: quizDocId } },
+    });
+    for (const r of results) {
+      await strapi.documents('api::quiz-result.quiz-result').delete({ documentId: r.documentId });
+    }
+
+    await strapi.documents('api::quiz.quiz').delete({ documentId: quizDocId });
+
+    return ctx.send({
+      message: 'Quiz and associated submission results deleted successfully.',
+      data: { documentId: quizDocId, id: quiz.id, title: quiz.title },
+    });
   },
 
   async find(ctx) {

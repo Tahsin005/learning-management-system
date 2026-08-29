@@ -63,15 +63,35 @@ export function useLoginMutation() {
     },
     onSuccess: async (data) => {
       setAuth(data.jwt, data.user);
+      let userObj = data.user;
       try {
         const fullUser = await authApi.getCurrentUser();
         setAuth(data.jwt, fullUser);
         queryClient.setQueryData(AUTH_QUERY_KEY, fullUser);
+        userObj = fullUser;
       } catch {
         queryClient.setQueryData(AUTH_QUERY_KEY, data.user);
       }
       toast.success(`Welcome back, ${data.user.username}!`);
-      router.push("/dashboard");
+
+      const urlParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+      const redirectParam = urlParams?.get("redirect");
+
+      if (redirectParam && !redirectParam.startsWith("/login")) {
+        router.push(redirectParam);
+        return;
+      }
+
+      const roleType = userObj.role?.type || "";
+      if (roleType === "instructor") {
+        router.push("/instructor");
+      } else if (roleType === "admin") {
+        router.push("/admin");
+      } else if (roleType === "content_manager") {
+        router.push("/content");
+      } else {
+        router.push("/dashboard");
+      }
     },
     onError: (error) => {
       toast.error(error.message || "Failed to log in. Please check your credentials.");

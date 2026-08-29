@@ -20,7 +20,7 @@ import { QuizResultModal } from "@/components/dashboard/quiz-result-modal";
 import { AccountProfileCard } from "@/components/dashboard/account-profile-card";
 import { SecurityTab } from "@/components/dashboard/security-tab";
 
-export default function DashboardPage() {
+export default function StudentDashboardPage() {
   const {
     user,
     role,
@@ -48,20 +48,24 @@ export default function DashboardPage() {
     isAuthenticated
   );
 
-  const enrollments = enrollmentsData?.data || [];
+  const rawEnrollments = enrollmentsData?.data || [];
+  const enrollments = rawEnrollments.filter((e) => e.course !== null && e.course !== undefined);
+
   const enrollmentsPagination = enrollmentsData?.meta?.pagination || {
     page: 1,
     pageSize: 3,
     pageCount: 1,
-    total: 0,
+    total: enrollments.length,
   };
 
-  const quizResults = quizResultsData?.data || [];
+  const rawQuizResults = quizResultsData?.data || [];
+  const quizResults = rawQuizResults.filter((r) => r.quiz !== null && r.quiz !== undefined);
+
   const quizPagination = quizResultsData?.meta?.pagination || {
     page: 1,
     pageSize: 5,
     pageCount: 1,
-    total: 0,
+    total: quizResults.length,
   };
 
   const handleChangePassword = async (values: ChangePasswordFormValues) => {

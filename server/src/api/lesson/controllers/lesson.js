@@ -114,7 +114,22 @@ module.exports = createCoreController('api::lesson.lesson', ({ strapi }) => ({
       return ctx.forbidden('You do not have permission to delete this lesson.');
     }
 
-    return super.delete(ctx);
+    const lessonDocId = lesson.documentId || lesson.id;
+
+    // Cascade delete associated lesson progress records
+    const progresses = await strapi.documents('api::lesson-progress.lesson-progress').findMany({
+      filters: { lesson: { documentId: lessonDocId } },
+    });
+    for (const p of progresses) {
+      await strapi.documents('api::lesson-progress.lesson-progress').delete({ documentId: p.documentId });
+    }
+
+    await strapi.documents('api::lesson.lesson').delete({ documentId: lessonDocId });
+
+    return ctx.send({
+      message: 'Lesson and associated progress records deleted successfully.',
+      data: { documentId: lessonDocId, id: lesson.id, title: lesson.title },
+    });
   },
 
   async findOne(ctx) {

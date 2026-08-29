@@ -22,7 +22,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { QuizSubmissionResponse } from "@/types/course";
+import type { QuizSubmissionResponse, QuizQuestion } from "@/types/course";
 
 import { QuizHero } from "@/components/quiz/quiz-hero";
 import { QuizQuestionCard } from "@/components/quiz/quiz-question-card";
@@ -73,6 +73,15 @@ export default function QuizRunnerPage({ params }: QuizRunnerPageProps) {
           submittedAt: existingResultRecord.submittedAt,
         }
       : null);
+
+  const displayedQuestions: QuizQuestion[] = activeResult?.answers && activeResult.answers.length > 0
+    ? activeResult.answers.map((ans, idx) => ({
+        id: idx,
+        questionText: ans.questionText,
+        options: ans.options,
+        correctAnswerIndex: ans.correctAnswerIndex,
+      }))
+    : questions;
 
   const handleSelectOption = (questionIndex: number, optionIndex: number) => {
     if (activeResult) return;
@@ -191,7 +200,7 @@ export default function QuizRunnerPage({ params }: QuizRunnerPageProps) {
           quiz={quiz}
           activeResult={activeResult}
           courseDocId={courseDocId}
-          questionsCount={questions.length}
+          questionsCount={activeResult ? activeResult.totalQuestions : questions.length}
           answeredCount={answeredCount}
           progressPct={progressPct}
         />
@@ -199,12 +208,12 @@ export default function QuizRunnerPage({ params }: QuizRunnerPageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <div className="space-y-6">
-              {questions.map((question, qIdx) => (
+              {displayedQuestions.map((question, qIdx) => (
                 <QuizQuestionCard
                   key={question.id || qIdx}
                   question={question}
                   qIdx={qIdx}
-                  totalQuestions={questions.length}
+                  totalQuestions={displayedQuestions.length}
                   selectedOptionIndex={
                     activeResult
                       ? activeResult.answers?.[qIdx]?.selectedOptionIndex
@@ -255,7 +264,7 @@ export default function QuizRunnerPage({ params }: QuizRunnerPageProps) {
 
           <div className="space-y-6">
             <QuizNavigator
-              questions={questions}
+              questions={displayedQuestions}
               selectedAnswers={selectedAnswers}
               activeResult={activeResult}
               onScrollToQuestion={scrollToQuestion}
