@@ -22,6 +22,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Scholler - Modern Learning Management System",
   description: "Accelerate your career with interactive courses, real-time analytics, and expert mentorship.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({

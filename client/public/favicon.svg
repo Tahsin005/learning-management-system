@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="scholler-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="50%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+    <filter id="subtle-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#000" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle -->
+  <rect width="32" height="32" rx="8" fill="url(#scholler-grad)" />
+
+  <!-- Graduation Cap Icon -->
+  <g filter="url(#subtle-shadow)">
+    <!-- Cap Diamond / Top -->
+    <path
+      d="M16 8L5 13.5L16 19L27 13.5L16 8Z"
+      fill="#ffffff"
+      stroke="#ffffff"
+      stroke-width="0.5"
+      stroke-linejoin="round"
+    />
+    
+    <!-- Cap Base / Skullcap -->
+    <path
+      d="M9 15.5V20.5C9 22.8 12.1 24.5 16 24.5C19.9 24.5 23 22.8 23 20.5V15.5L16 19L9 15.5Z"
+      fill="#e0e7ff"
+      opacity="0.95"
+    />
+
+    <!-- Tassel & Cord -->
+    <path
+      d="M25 14.5V21C25 21.6 24.4 22 23.8 22C23.2 22 22.8 21.6 22.8 21V15.6"
+      stroke="#38bdf8"
+      stroke-width="1.2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      fill="none"
+    />
+    <circle cx="23.8" cy="22" r="1" fill="#38bdf8" />
+  </g>
+</svg>
