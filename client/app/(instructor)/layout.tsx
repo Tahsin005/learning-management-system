@@ -44,7 +44,7 @@ export default function InstructorLayout({
     );
   }
 
-  if (!roleType || !["instructor", "admin"].includes(roleType)) {
+  if (!roleType || !["instructor", "admin", "content_manager"].includes(roleType)) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center p-8 text-center space-y-4">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive border border-destructive/20">
@@ -53,7 +53,7 @@ export default function InstructorLayout({
         <div className="space-y-1.5">
           <h2 className="text-xl font-bold text-foreground">Access Restricted</h2>
           <p className="text-xs text-muted-foreground max-w-md">
-            The Instructor Studio is reserved for faculty instructors and administrators.
+            The Studio is reserved for faculty instructors, content managers, and administrators.
             {roleType ? (
               <> Your current account role is <strong className="text-foreground capitalize">{roleType.replace("_", " ")}</strong>.</>
             ) : (

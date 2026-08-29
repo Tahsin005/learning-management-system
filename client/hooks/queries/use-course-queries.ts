@@ -35,7 +35,7 @@ export function useInstructorCoursesQuery(
   return useQuery<StrapiListResponse<Course>, Error>({
     queryKey: COURSE_QUERY_KEYS.instructorList(userId, params),
     queryFn: () => coursesApi.getInstructorCourses(userId, params),
-    enabled: enabled && !!userId,
+    enabled: enabled,
     staleTime: 1000 * 5,
   });
 }
